@@ -1,25 +1,19 @@
 /**
- * rubik_cube's size
+ * 块占块空间的比例
  */
-export const CUBE_SIZE = 6
+export const BLK_PERCENT = 0.95
 /**
- * space occupied by a block
+ * 片占块的比例
  */
-export const BLK_SPACE = CUBE_SIZE / 3
-export const HALF_BLK_SPACE = BLK_SPACE / 2
-/**
- * a block's size
- */
-export const BLK_SIZE = 1.9
-export const HALF_BLK_SIZE = BLK_SIZE / 2
-/**
- * piece's size
- */
-export const PIECE_SIZE = BLK_SIZE - 0.2
+export const PIECE_PERCENT = 0.9
+
+export const SCENE_COLOR = 0x222222
 
 export const PI = Math.PI
 export const HALF_PI = PI / 2
 export const QUARTER_PI = PI / 4
+
+export const ROTATE_EASE = 'linear'
 
 export const colors = {
     red: '#C41E3A',

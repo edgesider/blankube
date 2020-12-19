@@ -2,7 +2,7 @@ import {DoubleSide, Mesh, Vector3} from "three";
 import gsap from "gsap";
 import {Three} from "./index";
 import {RubikCube} from "./rubik_cube";
-import {HALF_BLK_SIZE, HALF_PI, PIECE_SIZE} from "./constants";
+import {HALF_PI, PIECE_PERCENT, ROTATE_EASE} from "./constants";
 
 export type Block = Mesh
 export type FaceName = 'r' | 'l' | 'u' | 'd' | 'f' | 'b'
@@ -49,7 +49,7 @@ export class Face {
             gsap.to(this, {
                 angle: this.angle + (clockwise ? -HALF_PI : HALF_PI),
                 duration: .1,
-                ease: 'easeIn',
+                ease: ROTATE_EASE,
                 onComplete: () => {
                     this.release()
                     resolve()
@@ -59,19 +59,19 @@ export class Face {
     }
 
     createPieces(color: Three.Color | string) {
-        const geo = new Three.PlaneGeometry(PIECE_SIZE, PIECE_SIZE)
+        const pieceSize = this.cube.blockSize * PIECE_PERCENT
+        const geo = new Three.PlaneGeometry(pieceSize, pieceSize)
         const material = new Three.MeshStandardMaterial({emissive: color, roughness: 0, side: DoubleSide})
         this.cube.blocks.filter(this.filter).forEach(blk => {
             const piece = new Three.Mesh(geo, material)
             const pos = blk.getWorldPosition(new Vector3())
-            pos.add(this.axis.clone().multiplyScalar(HALF_BLK_SIZE + .05))
+            pos.add(this.axis.clone().multiplyScalar(this.cube.blockSize / 2 + .05))
             piece.position.copy(blk.worldToLocal(pos))
             if (this.axis.x !== 0) {
                 piece.rotation.y = HALF_PI
             } else if (this.axis.y !== 0) {
                 piece.rotation.x = HALF_PI
             }
-            // piece.rotation.setFromVector3(this.axis.clone().sub(new Vector3(0, 0, 1).multiplyScalar(HALF_PI)))
             blk.add(piece)
         })
     }
