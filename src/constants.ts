@@ -20,3 +20,12 @@ export const PIECE_SIZE = BLK_SIZE - 0.2
 export const PI = Math.PI
 export const HALF_PI = PI / 2
 export const QUARTER_PI = PI / 4
+
+export const colors = {
+    red: '#C41E3A',
+    orange: '#FF5800',
+    blue: '#0051BA',
+    green: '#009E60',
+    white: '#FFFFFF',
+    yellow: '#FFD500',
+}

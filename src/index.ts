@@ -10,7 +10,6 @@ export const camera = new Three.PerspectiveCamera(
 const renderer = new Three.WebGLRenderer({canvas})
 renderer.setSize(window.innerWidth, window.innerHeight)
 
-// addAxis()
 addLight()
 renderLoop()
 export const cube = new RubikCube(scene, camera)
@@ -18,7 +17,7 @@ listenKey(cube)
 
 
 function addLight() {
-    const light = new Three.DirectionalLight(0xffffff, .1)
+    const light = new Three.DirectionalLight(0xffffff, .05)
     light.position.set(1, 1, 0)
     scene.add(light)
 }

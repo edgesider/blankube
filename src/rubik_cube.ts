@@ -2,7 +2,7 @@ import * as Three from 'three'
 import {Vector3} from 'three'
 import gsap from "gsap";
 import {Block, Face} from "./face";
-import {BLK_SIZE, BLK_SPACE, CUBE_SIZE, HALF_BLK_SPACE, HALF_PI} from "./constants";
+import {BLK_SIZE, BLK_SPACE, colors, CUBE_SIZE, HALF_BLK_SPACE, HALF_PI,} from "./constants";
 
 export class RubikCube {
     constructor(public scene: Three.Scene, public camera: Three.Camera) {
@@ -53,12 +53,12 @@ export class RubikCube {
     }
 
     createPieces() {
-        this.faces.r.createPieces('red')
-        this.faces.l.createPieces('orange')
-        this.faces.u.createPieces('yellow')
-        this.faces.d.createPieces('white')
-        this.faces.f.createPieces('blue')
-        this.faces.b.createPieces('green')
+        this.faces.r.createPieces(colors.red)
+        this.faces.l.createPieces(colors.orange)
+        this.faces.u.createPieces(colors.yellow)
+        this.faces.d.createPieces(colors.white)
+        this.faces.f.createPieces(colors.blue)
+        this.faces.b.createPieces(colors.green)
     }
 
     async rotate(axis: 'x' | 'y' | 'z', clockwise: boolean) {

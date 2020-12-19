@@ -8,9 +8,7 @@ export type Block = Mesh
 export type FaceName = 'r' | 'l' | 'u' | 'd' | 'f' | 'b'
 
 /**
- * Features:
- *  collect blocks and pieces belong to this face;
- *  maintain angle of face;
+ * 收集和维护魔方的一个面
  */
 export class Face {
     static faceAxis: { [key: string]: Vector3 } = {
