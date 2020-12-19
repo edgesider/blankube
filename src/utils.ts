@@ -1,6 +1,5 @@
 import * as Three from "three";
 import {Vector3} from "three";
-import {scene} from "@/index";
 
 export function rotateAboutPoint(object: Three.Object3D, point: Vector3, axis: Vector3, angle: number) {
     object.position.copy(point)
@@ -27,7 +26,7 @@ export async function delay(ms: number): Promise<void> {
     })
 }
 
-export function addAxis() {
+export function addAxis(obj) {
     const geoX = new Three.BufferGeometry().setFromPoints([
             new Three.Vector3(0, 0, 0), new Three.Vector3(5, 0, 0)]),
         geoY = new Three.BufferGeometry().setFromPoints([
@@ -37,7 +36,7 @@ export function addAxis() {
     const mtrX = new Three.LineBasicMaterial({color: 0xFF0000, linewidth: 10}),
         mtrY = new Three.LineBasicMaterial({color: 0xFF00, linewidth: 10}),
         mtrZ = new Three.LineBasicMaterial({color: 0xFF, linewidth: 10})
-    scene.add(new Three.Line(geoX, mtrX), new Three.Line(geoY, mtrY), new Three.Line(geoZ, mtrZ))
+    obj.add(new Three.Line(geoX, mtrX), new Three.Line(geoY, mtrY), new Three.Line(geoZ, mtrZ))
 
     const geoCor = new Three.ConeGeometry(.3, 1)
     const mtrCorX = new Three.MeshBasicMaterial({color: 0xFF0000})
@@ -53,5 +52,5 @@ export function addAxis() {
     const corZObj = new Three.Mesh(geoCor, mtrCorZ)
     corZObj.position.set(0, 0, 5)
     corZObj.rotateOnAxis(new Three.Vector3(1, 0, 0), Math.PI / 2)
-    scene.add(corX, corYObj, corZObj)
+    obj.add(corX, corYObj, corZObj)
 }

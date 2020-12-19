@@ -1,11 +1,12 @@
 import * as Three from 'three'
+import {Vector3} from 'three'
 import gsap from "gsap";
 import {Block, Face} from "./face";
 import {BLK_SIZE, BLK_SPACE, CUBE_SIZE, HALF_BLK_SPACE, HALF_PI} from "./constants";
 
 export class RubikCube {
     constructor(public scene: Three.Scene, public camera: Three.Camera) {
-        scene.background = new Three.Color(0x333333)
+        scene.background = new Three.Color(0x222222)
         camera.position.set(CUBE_SIZE * 1.3, CUBE_SIZE * 1.3, CUBE_SIZE * 2)
         camera.lookAt(0, 0, 0)
 
@@ -62,13 +63,21 @@ export class RubikCube {
 
     async rotate(axis: 'x' | 'y' | 'z', clockwise: boolean) {
         return new Promise<void>(resolve => {
-            const to = {
+            const axisVec = new Vector3()
+            axisVec[axis] = clockwise ? -1 : 1
+            const obj = {value: 0}
+            let last = 0
+            gsap.to(obj, {
+                value: HALF_PI,
                 duration: .1,
                 ease: 'easeIn',
-                onComplete: resolve
-            }
-            to[axis] = this.blockContainer.rotation[axis] + (clockwise ? -HALF_PI : HALF_PI)
-            gsap.to(this.blockContainer.rotation, to)
+                onUpdate: () => {
+                    this.blockContainer.rotateOnWorldAxis(axisVec, obj.value - last)
+                    last = obj.value
+                },
+                onUpdateParams: ['{self}', 'value'],
+                onComplete: resolve,
+            })
         })
     }
 }
