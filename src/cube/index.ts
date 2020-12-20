@@ -2,6 +2,8 @@ import * as Three from 'three'
 import {RubikCube} from "@/cube/rubik_cube";
 import {listenKey} from "@/input";
 import {SCENE_COLOR} from "@/cube/constants";
+import {CameraControl} from "@/cube/CameraControl";
+import Stats from "three/examples/jsm/libs/stats.module";
 
 export * as Three from 'three'
 
@@ -10,6 +12,8 @@ export let scene: Three.Scene
 export let camera: Three.PerspectiveCamera
 let renderer: Three.WebGLRenderer
 let cube: RubikCube
+let cameraControls: CameraControl
+let stats = Stats()
 
 export function init(canvas: HTMLCanvasElement) {
     _canvas = canvas
@@ -23,20 +27,31 @@ export function init(canvas: HTMLCanvasElement) {
     scene.background = new Three.Color(SCENE_COLOR)
 
     cube = new RubikCube(scene, 3)
-    camera.position.set(cube.cubeSize * 1.3, cube.cubeSize * 1.3, cube.cubeSize * 3)
-    camera.lookAt(0, 0, 0)
+    setCamera(cube.cubeSize)
 
+    stats.showPanel(0)
+    document.body.append(stats.dom)
     addLight()
     renderLoop()
     listenKey(cube)
+    return {cube, scene, camera, renderer}
+}
+
+export function setCamera(cubeSize: number) {
+    const distance = cubeSize * 5
+    camera.lookAt(0, 0, 0)
+    cameraControls?.dispose()
+    cameraControls = new CameraControl(camera, _canvas,
+        distance, cube.cubeSize * 6, cube.cubeSize * 6)
 }
 
 function onResize() {
-    camera.aspect = _canvas.clientWidth / _canvas.clientHeight
+    const {clientWidth: w, clientHeight: h} = _canvas
+    camera.aspect = w / h
     camera.updateProjectionMatrix()
-    renderer.setSize(_canvas.clientWidth, _canvas.clientHeight, false)
-    _canvas.width = _canvas.clientWidth
-    _canvas.height = _canvas.clientHeight
+    renderer.setSize(w, h, false)
+    _canvas.width = w
+    _canvas.height = h
 }
 
 function addLight() {
@@ -46,6 +61,8 @@ function addLight() {
 }
 
 function renderLoop() {
-    requestAnimationFrame(renderLoop)
+    stats.begin()
     renderer.render(scene, camera)
+    stats.end()
+    requestAnimationFrame(renderLoop)
 }
