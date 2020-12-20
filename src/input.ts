@@ -2,29 +2,45 @@ import {RubikCube} from "./rubik_cube";
 
 const faceKeys = ['r', 'l', 'f', 'b', 'd', 'u']
 const cubeKeys = ['x', 'y', 'z']
+const otherKeys = [' ']
 
 let _cube: RubikCube
+let looperStarted = false
 
 export function listenKey(cube: RubikCube) {
     _cube = cube
-    setTimeout(loop, 0)
+    if (!looperStarted) {
+        setTimeout(loop, 0)
+        looperStarted = true
+    }
 }
 
 async function loop() {
-    // noinspection InfiniteLoopJS
-    while (true) {
-        const ev = await waitKey()
-        if (ev.altKey || ev.ctrlKey)
-            continue
-        const {key} = ev
-        const key_l = key.toLowerCase()
-        const clockwise = key_l === key
-        if (faceKeys.indexOf(key_l) !== -1) {
-            await _cube.faces[key_l].action(clockwise)
-        } else if (cubeKeys.indexOf(key_l) != -1) {
-            // @ts-ignore
-            await _cube.rotate(key_l, clockwise)
+    try {
+        // noinspection InfiniteLoopJS
+        while (true) {
+            const ev = await waitKey()
+            if (ev.altKey || ev.ctrlKey)
+                continue
+            const {key} = ev
+            const key_l = key.toLowerCase()
+            const clockwise = key_l === key
+            if (faceKeys.indexOf(key_l) !== -1) {
+                await _cube.faces[key_l].action(clockwise)
+            } else if (cubeKeys.indexOf(key_l) != -1) {
+                // @ts-ignore
+                await _cube.rotate(key_l, clockwise)
+            } else if (otherKeys.indexOf(key) != -1) {
+                switch (key) {
+                    case ' ':
+                        _cube.reset()
+                        break
+                }
+            }
         }
+    } finally {
+        console.warn('key listener exited')
+        looperStarted = false
     }
 }
 

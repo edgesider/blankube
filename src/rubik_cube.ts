@@ -1,5 +1,5 @@
 import * as Three from 'three'
-import {Vector3} from 'three'
+import {Material, Vector3} from 'three'
 import gsap from "gsap";
 import {Block, Face} from "./face";
 import {BLK_PERCENT, colors, HALF_PI, ROTATE_EASE} from "./constants";
@@ -13,8 +13,9 @@ export class RubikCube {
 
         this.createBlocks()
         this.createFaces()
+        this.createPieces()
         scene.add(this.blockContainer)
-        this.blockContainer.add(...Object.values(this.faces).map(f => f.dummy))
+        scene.add(...Object.values(this.faces).map(f => f.dummy))
     }
 
     /**
@@ -30,7 +31,7 @@ export class RubikCube {
     blocks = new Array<Block>()
     blockContainer = new Three.Mesh(new Three.BoxGeometry())
 
-    createBlocks() {
+    private createBlocks() {
         const geo = new Three.BoxGeometry(this.blockSize, this.blockSize, this.blockSize)
         for (let z = 0; z < this.order; z++) {
             for (let y = 0; y < this.order; y++) {
@@ -38,7 +39,6 @@ export class RubikCube {
                     if (x != 0 && x != this.order - 1 && y != 0 && y !== this.order - 1 && z != 0 && z != this.order - 1)
                         continue
                     const blockMaterial = new Three.MeshStandardMaterial({
-                        // emissive: Number.parseInt(`0x${x * 3}${x * 3}${y * 3}${y * 3}${z * 3}${z * 3}`),
                         emissive: 'black',
                         side: Three.DoubleSide,
                     })
@@ -53,7 +53,7 @@ export class RubikCube {
         }
     }
 
-    createFaces() {
+    private createFaces() {
         this.faces = Object.freeze({
             r: new Face(this, 'r', blk =>
                 blk.getWorldPosition(new Vector3()).x >= this.cubeSize / 2 - this.blockSpace),
@@ -68,10 +68,9 @@ export class RubikCube {
             b: new Face(this, 'b', blk =>
                 blk.getWorldPosition(new Vector3()).z <= -(this.cubeSize / 2 - this.blockSpace)),
         })
-        this.createPieces()
     }
 
-    createPieces() {
+    private createPieces() {
         this.faces.r.createPieces(colors.red)
         this.faces.l.createPieces(colors.orange)
         this.faces.u.createPieces(colors.yellow)
@@ -94,9 +93,29 @@ export class RubikCube {
                     this.blockContainer.rotateOnWorldAxis(axisVec, obj.value - last)
                     last = obj.value
                 },
-                onUpdateParams: ['{self}', 'value'],
                 onComplete: resolve,
             })
         })
+    }
+
+    reset(order = -1) {
+        if (order !== -1) {
+            this.order = order
+            this.blockSpace = this.cubeSize / order
+            this.blockSize = this.blockSpace * BLK_PERCENT
+        }
+        this.blocks.forEach(blk => {
+            blk.geometry.dispose();
+            (blk.material as Material).dispose()
+        })
+        this.blocks.length = 0
+        this.blockContainer.clear()
+        this.blockContainer.rotation.set(0, 0, 0)
+        this.blockContainer.position.set(0, 0, 0)
+        this.createBlocks()
+        this.createPieces()
+    }
+
+    isResolved() {
     }
 }
