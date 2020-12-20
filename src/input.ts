@@ -1,4 +1,4 @@
-import {RubikCube} from "@/cube/rubik_cube";
+import {RubikCube} from "@/cube/RubikCube";
 
 const faceKeys = ['r', 'l', 'f', 'b', 'd', 'u']
 const cubeKeys = ['x', 'y', 'z']
@@ -46,7 +46,7 @@ async function loop() {
 
 const keyWaiter = []
 const cachedKeys: KeyboardEvent[] = []
-const MAX_CACHED_KEYS = 2
+const MAX_CACHED_KEYS = 1
 
 document.addEventListener('keydown', ev => {
     const waiter = keyWaiter.shift()

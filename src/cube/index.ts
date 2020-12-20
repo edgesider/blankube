@@ -1,5 +1,5 @@
 import * as Three from 'three'
-import {RubikCube} from "@/cube/rubik_cube";
+import {RubikCube} from "@/cube/RubikCube";
 import {listenKey} from "@/input";
 import {SCENE_COLOR} from "@/cube/constants";
 import {CameraControl} from "@/cube/CameraControl";

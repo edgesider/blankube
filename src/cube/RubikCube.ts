@@ -1,8 +1,8 @@
 import * as Three from 'three'
 import {Mesh, Vector3} from 'three'
 import gsap from "gsap";
-import {Face} from "@/cube/face";
-import {Block} from "@/cube/block";
+import {Face} from "@/cube/Face";
+import {Block} from "@/cube/Block";
 import {BLOCK_SIZE, HALF_PI, ROTATE_DURATION, ROTATE_EASE} from "@/cube/constants";
 
 export type Piece = Mesh
