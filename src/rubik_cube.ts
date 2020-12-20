@@ -56,17 +56,17 @@ export class RubikCube {
     createFaces() {
         this.faces = Object.freeze({
             r: new Face(this, 'r', blk =>
-                blk.parent.localToWorld(blk.position.clone()).x >= this.cubeSize / 2 - this.blockSpace),
+                blk.getWorldPosition(new Vector3()).x >= this.cubeSize / 2 - this.blockSpace),
             l: new Face(this, 'l', blk =>
-                blk.parent.localToWorld(blk.position.clone()).x <= -(this.cubeSize / 2 - this.blockSpace)),
+                blk.getWorldPosition(new Vector3()).x <= -(this.cubeSize / 2 - this.blockSpace)),
             u: new Face(this, 'u', blk =>
-                blk.parent.localToWorld(blk.position.clone()).y >= this.cubeSize / 2 - this.blockSpace),
+                blk.getWorldPosition(new Vector3()).y >= this.cubeSize / 2 - this.blockSpace),
             d: new Face(this, 'd', blk =>
-                blk.parent.localToWorld(blk.position.clone()).y <= -(this.cubeSize / 2 - this.blockSpace)),
+                blk.getWorldPosition(new Vector3()).y <= -(this.cubeSize / 2 - this.blockSpace)),
             f: new Face(this, 'f', blk =>
-                blk.parent.localToWorld(blk.position.clone()).z >= this.cubeSize / 2 - this.blockSpace),
+                blk.getWorldPosition(new Vector3()).z >= this.cubeSize / 2 - this.blockSpace),
             b: new Face(this, 'b', blk =>
-                blk.parent.localToWorld(blk.position.clone()).z <= -(this.cubeSize / 2 - this.blockSpace)),
+                blk.getWorldPosition(new Vector3()).z <= -(this.cubeSize / 2 - this.blockSpace)),
         })
         this.createPieces()
     }
