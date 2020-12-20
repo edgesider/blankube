@@ -8,7 +8,7 @@ export const scene = new Three.Scene()
 export const camera = new Three.PerspectiveCamera(
     50, window.innerWidth / window.innerHeight, 0.1, 1000)
 
-const renderer = new Three.WebGLRenderer({canvas})
+const renderer = new Three.WebGLRenderer({canvas, antialias: true, alpha: true})
 renderer.setSize(window.innerWidth, window.innerHeight)
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight
@@ -17,7 +17,7 @@ window.addEventListener('resize', () => {
 })
 
 scene.background = new Three.Color(SCENE_COLOR)
-export const cube = new RubikCube(scene, 3, 200)
+export const cube = new RubikCube(scene, 7, 20)
 camera.position.set(cube.cubeSize * 1.3, cube.cubeSize * 1.3, cube.cubeSize * 3)
 camera.lookAt(0, 0, 0)
 
