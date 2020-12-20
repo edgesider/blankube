@@ -1,7 +1,7 @@
 import * as Three from 'three'
-import {RubikCube} from "./rubik_cube";
-import {listenKey} from "./input";
-import {SCENE_COLOR} from "./constants";
+import {RubikCube} from "@/rubik_cube";
+import {listenKey} from "@/input";
+import {SCENE_COLOR} from "@/constants";
 
 const canvas: HTMLCanvasElement = document.querySelector('#game')
 export const scene = new Three.Scene()
@@ -20,7 +20,7 @@ window.addEventListener('resize', () => {
 })
 
 scene.background = new Three.Color(SCENE_COLOR)
-const cube: RubikCube = new RubikCube(scene, 3, 200)
+const cube: RubikCube = new RubikCube(scene, 3)
 camera.position.set(cube.cubeSize * 1.3, cube.cubeSize * 1.3, cube.cubeSize * 3)
 camera.lookAt(0, 0, 0)
 

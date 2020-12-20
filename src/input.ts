@@ -1,4 +1,4 @@
-import {RubikCube} from "./rubik_cube";
+import {RubikCube} from "@/rubik_cube";
 
 const faceKeys = ['r', 'l', 'f', 'b', 'd', 'u']
 const cubeKeys = ['x', 'y', 'z']

@@ -1,15 +1,16 @@
 import * as Three from 'three'
-import {Material, Vector3} from 'three'
+import {Mesh, Vector3} from 'three'
 import gsap from "gsap";
-import {Block, Face} from "./face";
-import {BLK_PERCENT, colors, HALF_PI, ROTATE_EASE} from "./constants";
+import {Face} from "@/face";
+import {Block} from "@/block";
+import {BLOCK_SIZE, HALF_PI, ROTATE_DURATION, ROTATE_EASE} from "@/constants";
+
+export type Piece = Mesh
 
 export class RubikCube {
     constructor(public scene: Three.Scene,
-                public order: number,
-                public cubeSize: number) {
-        this.blockSpace = cubeSize / order
-        this.blockSize = this.blockSpace * BLK_PERCENT
+                public order: number) {
+        this.cubeSize = BLOCK_SIZE * order;
 
         this.createBlocks()
         this.createFaces()
@@ -18,32 +19,20 @@ export class RubikCube {
         scene.add(...Object.values(this.faces).map(f => f.dummy))
     }
 
-    /**
-     * 块的实际大小
-     */
-    blockSize: number
-    /**
-     * 块所占的空间，包括块的实际大小和中间的间隙
-     */
-    blockSpace: number
+    cubeSize: number
 
     faces: Readonly<{ [key: string]: Face }>
     blocks = new Array<Block>()
     blockContainer = new Three.Mesh(new Three.BoxGeometry())
 
     private createBlocks() {
-        const geo = new Three.BoxGeometry(this.blockSize, this.blockSize, this.blockSize)
         for (let z = 0; z < this.order; z++) {
             for (let y = 0; y < this.order; y++) {
                 for (let x = 0; x < this.order; x++) {
                     if (x != 0 && x != this.order - 1 && y != 0 && y !== this.order - 1 && z != 0 && z != this.order - 1)
                         continue
-                    const blockMaterial = new Three.MeshStandardMaterial({
-                        emissive: 'black',
-                        side: Three.DoubleSide,
-                    })
-                    const blk = new Three.Mesh(geo, blockMaterial)
-                    blk.position.set((x + 0.5) * this.blockSpace, (y + 0.5) * this.blockSpace, (z + 0.5) * this.blockSpace)
+                    const blk = new Block()
+                    blk.position.set((x + 0.5) * BLOCK_SIZE, (y + 0.5) * BLOCK_SIZE, (z + 0.5) * BLOCK_SIZE)
                     blk.position.sub(new Vector3(this.cubeSize / 2, this.cubeSize / 2, this.cubeSize / 2))
 
                     this.blockContainer.add(blk)
@@ -56,27 +45,35 @@ export class RubikCube {
     private createFaces() {
         this.faces = Object.freeze({
             r: new Face(this, 'r', blk =>
-                blk.getWorldPosition(new Vector3()).x >= this.cubeSize / 2 - this.blockSpace),
+                blk.getWorldPosition(new Vector3()).x >= this.cubeSize / 2 - BLOCK_SIZE),
             l: new Face(this, 'l', blk =>
-                blk.getWorldPosition(new Vector3()).x <= -(this.cubeSize / 2 - this.blockSpace)),
+                blk.getWorldPosition(new Vector3()).x <= -(this.cubeSize / 2 - BLOCK_SIZE)),
             u: new Face(this, 'u', blk =>
-                blk.getWorldPosition(new Vector3()).y >= this.cubeSize / 2 - this.blockSpace),
+                blk.getWorldPosition(new Vector3()).y >= this.cubeSize / 2 - BLOCK_SIZE),
             d: new Face(this, 'd', blk =>
-                blk.getWorldPosition(new Vector3()).y <= -(this.cubeSize / 2 - this.blockSpace)),
+                blk.getWorldPosition(new Vector3()).y <= -(this.cubeSize / 2 - BLOCK_SIZE)),
             f: new Face(this, 'f', blk =>
-                blk.getWorldPosition(new Vector3()).z >= this.cubeSize / 2 - this.blockSpace),
+                blk.getWorldPosition(new Vector3()).z >= this.cubeSize / 2 - BLOCK_SIZE),
             b: new Face(this, 'b', blk =>
-                blk.getWorldPosition(new Vector3()).z <= -(this.cubeSize / 2 - this.blockSpace)),
+                blk.getWorldPosition(new Vector3()).z <= -(this.cubeSize / 2 - BLOCK_SIZE)),
         })
     }
 
     private createPieces() {
-        this.faces.r.createPieces(colors.red)
-        this.faces.l.createPieces(colors.orange)
-        this.faces.u.createPieces(colors.yellow)
-        this.faces.d.createPieces(colors.white)
-        this.faces.f.createPieces(colors.blue)
-        this.faces.b.createPieces(colors.green)
+        Object.values(this.faces).forEach(face => {
+            face.getBlocks().forEach(blk => {
+                const piece = blk.addPiece(face.name)
+                const pos = blk.getWorldPosition(new Vector3())
+                pos.add(face.axis.clone().multiplyScalar(BLOCK_SIZE / 2 + BLOCK_SIZE * .01))
+                piece.position.copy(blk.worldToLocal(pos))
+                // plane默认面向世界z轴，所以旋转另一个轴
+                if (face.axis.x !== 0) {
+                    piece.rotation.y = HALF_PI
+                } else if (face.axis.y !== 0) {
+                    piece.rotation.x = HALF_PI
+                }
+            })
+        })
     }
 
     async rotate(axis: 'x' | 'y' | 'z', clockwise: boolean) {
@@ -87,7 +84,7 @@ export class RubikCube {
             let last = 0
             gsap.to(obj, {
                 value: HALF_PI,
-                duration: .1,
+                duration: ROTATE_DURATION,
                 ease: ROTATE_EASE,
                 onUpdate: () => {
                     this.blockContainer.rotateOnWorldAxis(axisVec, obj.value - last)
@@ -101,13 +98,8 @@ export class RubikCube {
     reset(order = -1) {
         if (order !== -1) {
             this.order = order
-            this.blockSpace = this.cubeSize / order
-            this.blockSize = this.blockSpace * BLK_PERCENT
+            this.cubeSize = BLOCK_SIZE * order
         }
-        this.blocks.forEach(blk => {
-            blk.geometry.dispose();
-            (blk.material as Material).dispose()
-        })
         this.blocks.length = 0
         this.blockContainer.clear()
         this.blockContainer.rotation.set(0, 0, 0)

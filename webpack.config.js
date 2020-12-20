@@ -16,7 +16,10 @@ module.exports = {
         }]
     },
     resolve: {
-        extensions: ['.js', '.ts']
+        extensions: ['.js', '.ts'],
+        alias: {
+            '@': path.resolve(__dirname, 'src')
+        }
     },
     plugins: [new HtmlWebpackPlugin({template: "./public/index.html"})],
     devServer: {
