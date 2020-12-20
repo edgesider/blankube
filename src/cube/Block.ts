@@ -1,7 +1,7 @@
 import * as Three from "three";
 import {DoubleSide, Mesh} from "three";
 import {Piece} from "@/cube/RubikCube";
-import {BLOCK_SIZE, colors, PIECE_SIZE} from "@/cube/constants";
+import {BLOCK_SIZE, colors, PIECE_SIZE} from "@/constants";
 
 const colorMap = {
     r: colors.red, l: colors.orange,

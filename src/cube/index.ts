@@ -1,8 +1,8 @@
 import * as Three from 'three'
 import {PerspectiveCamera, Scene, WebGLRenderer} from 'three'
 import {RubikCube} from "@/cube/RubikCube";
-import {listenKey} from "@/input";
-import {SCENE_COLOR} from "@/cube/constants";
+import {listenKey} from "@/cube/input";
+import {BLOCK_SIZE, SCENE_COLOR} from "@/constants";
 import {CameraControl} from "@/cube/CameraControl";
 import Stats from "three/examples/jsm/libs/stats.module";
 

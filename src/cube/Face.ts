@@ -2,7 +2,7 @@ import {Vector3} from "three";
 import gsap from "gsap";
 import {Three} from "@/cube/index";
 import {Piece, RubikCube} from "@/cube/RubikCube";
-import {HALF_PI, ROTATE_DURATION, ROTATE_EASE} from "@/cube/constants";
+import {HALF_PI, ROTATE_DURATION, ROTATE_EASE} from "@/constants";
 import {Block} from "@/cube/Block";
 import {nearlyEqual} from "@/utils";
 
