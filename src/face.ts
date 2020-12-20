@@ -1,9 +1,10 @@
 import {Vector3} from "three";
 import gsap from "gsap";
 import {Three} from "@/index";
-import {RubikCube} from "@/rubik_cube";
+import {Piece, RubikCube} from "@/rubik_cube";
 import {HALF_PI, ROTATE_DURATION, ROTATE_EASE} from "@/constants";
 import {Block} from "@/block";
+import {nearlyEqual} from "@/utils";
 
 export type FaceName = 'r' | 'l' | 'u' | 'd' | 'f' | 'b'
 
@@ -35,9 +36,15 @@ export class Face {
         this.dummy.rotation.setFromVector3(this.dummy.parent.worldToLocal(this.axis.clone().multiplyScalar(angle)))
     }
 
-    get isResolved(): boolean {
+    isResolved(): boolean {
+        const pieces = this.getPieces()
+        return pieces.every(p => p.material === pieces[0].material)
+    }
 
-        return true
+    getPieces(): Piece[] {
+        return this.getBlocks().map(b => b.pieces).flat().filter(p =>
+            !nearlyEqual(p.getWorldDirection(new Vector3()).dot(this.axis), 0)
+        )
     }
 
     async action(clockwise: boolean) {

@@ -109,5 +109,6 @@ export class RubikCube {
     }
 
     isResolved() {
+        return Object.values(this.faces).every(f => f.isResolved())
     }
 }

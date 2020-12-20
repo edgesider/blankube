@@ -31,8 +31,8 @@ export class Block extends Mesh {
 
     pieces = new Array<Piece>()
 
-    addPiece(face_name: string): Piece {
-        const piece = new Three.Mesh(pieceGeometry, pieceMaterials[face_name])
+    addPiece(faceName: string): Piece {
+        const piece = new Three.Mesh(pieceGeometry, pieceMaterials[faceName])
         this.add(piece)
         this.pieces.push(piece)
         return piece
