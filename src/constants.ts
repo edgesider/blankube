@@ -5,7 +5,7 @@ export const BLK_PERCENT = 0.95
 /**
  * 片占块的比例
  */
-export const PIECE_PERCENT = 0.9
+export const PIECE_PERCENT = 0.85
 
 export const SCENE_COLOR = 0x222222
 
