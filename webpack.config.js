@@ -18,8 +18,11 @@ module.exports = {
     resolve: {
         extensions: ['.js', '.ts']
     },
-    plugins: [new HtmlWebpackPlugin({template: "./src/index.html"})],
-    devServer: {hot: true},
+    plugins: [new HtmlWebpackPlugin({template: "./public/index.html"})],
+    devServer: {
+        hot: true,
+        contentBase: path.resolve(__dirname, 'public')
+    },
     stats: {
         modules: false
     }
