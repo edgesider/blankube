@@ -65,7 +65,7 @@ export class Face {
         this.cube.blocks.filter(this.filter).forEach(blk => {
             const piece = new Three.Mesh(geo, material)
             const pos = blk.getWorldPosition(new Vector3())
-            pos.add(this.axis.clone().multiplyScalar(this.cube.blockSize / 2 + .05))
+            pos.add(this.axis.clone().multiplyScalar(this.cube.blockSize / 2 + this.cube.blockSize * .01))
             piece.position.copy(blk.worldToLocal(pos))
             if (this.axis.x !== 0) {
                 piece.rotation.y = HALF_PI

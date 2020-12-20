@@ -3,7 +3,14 @@ import {RubikCube} from "./rubik_cube";
 const faceKeys = ['r', 'l', 'f', 'b', 'd', 'u']
 const cubeKeys = ['x', 'y', 'z']
 
-export async function listenKey(cube: RubikCube) {
+let _cube: RubikCube
+
+export function listenKey(cube: RubikCube) {
+    _cube = cube
+    setTimeout(loop, 0)
+}
+
+async function loop() {
     // noinspection InfiniteLoopJS
     while (true) {
         const ev = await waitKey()
@@ -13,10 +20,10 @@ export async function listenKey(cube: RubikCube) {
         const key_l = key.toLowerCase()
         const clockwise = key_l === key
         if (faceKeys.indexOf(key_l) !== -1) {
-            await cube.faces[key_l].action(clockwise)
+            await _cube.faces[key_l].action(clockwise)
         } else if (cubeKeys.indexOf(key_l) != -1) {
             // @ts-ignore
-            await cube.rotate(key_l, clockwise)
+            await _cube.rotate(key_l, clockwise)
         }
     }
 }
