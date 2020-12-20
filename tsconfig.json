@@ -17,6 +17,7 @@
         "src/*"
       ]
     },
+    "experimentalDecorators": true
   },
   "include": [
     "./**/*.ts",

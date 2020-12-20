@@ -13,23 +13,22 @@
 </template>
 
 <script lang="ts">
-import {init, setCamera} from "@/cube"
+import Vue from "vue";
+import Component from "vue-class-component"
+import Game from "@/cube";
 
-export default {
+@Component({})
+export default class App extends Vue {
+    orders = [1, 2, 3, 4, 5, 6, 7, 8]
+    order = 3
+    game: Game
+
     mounted() {
-        const {cube} = init(this.$refs['canvas'] as HTMLCanvasElement)
-        this.cube = cube
-    },
-    data: () => ({
-        orders: [1, 2, 3, 4, 5, 6, 7, 8],
-        order: 3,
-        cube: null,
-    }),
-    methods: {
-        orderSelected() {
-            this.cube.reset(this.order)
-            setCamera(this.cube.cubeSize)
-        }
+        this.game = new Game(this.$refs['canvas'] as HTMLCanvasElement)
+    }
+
+    orderSelected() {
+        this.game.reset(this.order)
     }
 }
 </script>
