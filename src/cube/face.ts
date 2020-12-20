@@ -1,9 +1,9 @@
 import {Vector3} from "three";
 import gsap from "gsap";
-import {Three} from "@/index";
-import {Piece, RubikCube} from "@/rubik_cube";
-import {HALF_PI, ROTATE_DURATION, ROTATE_EASE} from "@/constants";
-import {Block} from "@/block";
+import {Three} from "@/cube/index";
+import {Piece, RubikCube} from "@/cube/rubik_cube";
+import {HALF_PI, ROTATE_DURATION, ROTATE_EASE} from "@/cube/constants";
+import {Block} from "@/cube/block";
 import {nearlyEqual} from "@/utils";
 
 export type FaceName = 'r' | 'l' | 'u' | 'd' | 'f' | 'b'

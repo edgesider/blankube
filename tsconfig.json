@@ -16,10 +16,11 @@
       "@/*": [
         "src/*"
       ]
-    }
+    },
   },
   "include": [
-    "./**/*.ts"
+    "./**/*.ts",
+    "./**/*.vue"
   ],
   "exclude": [
     "node_modules"
