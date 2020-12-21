@@ -22,8 +22,6 @@ export default class Game {
         this.cube = new RubikCube(this.scene, 3)
         this.setCamera(this.cube.cubeSize)
 
-        this.stats.showPanel(0)
-        document.body.append(this.stats.dom)
         this.addLight()
         this.renderLoop()
         this.actions = new Actions(this)
@@ -35,7 +33,6 @@ export default class Game {
     renderer: WebGLRenderer
     cube: RubikCube
     actions: Actions
-    stats = Stats()
 
     setCamera(cubeSize: number) {
         const distance = cubeSize * 5
@@ -53,6 +50,20 @@ export default class Game {
         requestAnimationFrame(() =>
             this.cube.reset(order)
         )
+    }
+
+    private stats = Stats()
+    private _statsEnabled = false
+    get statsEnabled() {
+        return this._statsEnabled
+    }
+
+    set statsEnabled(b) {
+        this._statsEnabled = b
+        if (b)
+            document.body.append(this.stats.dom)
+        else
+            document.body.removeChild(this.stats.dom)
     }
 
     private addLight() {

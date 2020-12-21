@@ -7,6 +7,7 @@
                     <option v-for="o in orders" :value="o">{{ o }}阶</option>
                 </select>
             </div>
+            <button @click="toggleStats">Stats</button>
         </div>
         <canvas ref="canvas" id="cube"></canvas>
     </div>
@@ -33,6 +34,10 @@ export default class App extends Vue {
 
     orderSelected() {
         this.game.reset(this.order)
+    }
+
+    toggleStats() {
+        this.game.statsEnabled = !this.game.statsEnabled
     }
 }
 </script>
