@@ -1,6 +1,6 @@
 # Blanckube
 
-简单的魔方模拟器。
+简单的魔方模拟器，[示例](https://edgesider.github.io/blanckube/dist/index.html)。
 
 计划的功能有：
 
