@@ -1,5 +1,5 @@
 export const BLOCK_SIZE = 5
-export const PIECE_SIZE = BLOCK_SIZE * 0.85
+export const PIECE_SIZE = BLOCK_SIZE * 0.8
 
 export const SCENE_COLOR = 0x222222
 
