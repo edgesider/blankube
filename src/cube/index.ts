@@ -1,10 +1,10 @@
 import * as Three from 'three'
 import {PerspectiveCamera, Scene, WebGLRenderer} from 'three'
 import {RubikCube} from "@/cube/RubikCube";
-import {listenKeyboard} from "@/input/keyboard";
 import {BLOCK_SIZE, SCENE_COLOR} from "@/constants";
 import {CameraControl} from "@/cube/CameraControl";
 import Stats from "three/examples/jsm/libs/stats.module";
+import {Actions} from "@/cube/Actions";
 
 export * as Three from 'three'
 
@@ -26,7 +26,7 @@ export default class Game {
         document.body.append(this.stats.dom)
         this.addLight()
         this.renderLoop()
-        listenKeyboard(this)
+        this.actions = new Actions(this)
     }
 
     scene: Scene
@@ -34,6 +34,7 @@ export default class Game {
     cameraControl: CameraControl
     renderer: WebGLRenderer
     cube: RubikCube
+    actions: Actions
     stats = Stats()
 
     setCamera(cubeSize: number) {
