@@ -1,28 +1,24 @@
-import EventWaiter from "@/input/EventWaiter";
+import {CombinedSource, ISource} from "@/input/pipe";
+import DomEventSource from "@/input/DomEventSource";
 
-class ShortcutRecorder {
-    private keydownWaiter = new EventWaiter(document, 'keydown', 1)
-    private keyupWaiter = new EventWaiter(document, 'keyup', 1)
+export default class ShortcutRecorder implements ISource<string> {
+    private keydownSrc = new DomEventSource(document, 'keydown', 4)
+    private keyupSrc = new DomEventSource(document, 'keyup', 4)
+    private cmbSrc = new CombinedSource([this.keydownSrc, this.keyupSrc])
 
-    async wait() {
+    async get(): Promise<string> {
         let key = ''
         while (true) {
-            const ev = await Promise.race([this.keydownWaiter.wait(), this.keyupWaiter.wait()])
+            const ev = await this.cmbSrc.get()
             ev.preventDefault()
-            if (ev.type === 'keydown') {
-                key = ev.getName()
-                this.keyupWaiter.abort()
-            } else {
-                this.keydownWaiter.abort()
-                if (key)
-                    break
-            }
+            if (ev.type === 'keydown')
+                key = ev.getDescription()
+            else if (ev.type === 'keyup' && key)
+                break
         }
         return key
     }
 
     abort() {
-        this.keydownWaiter.abort()
-        this.keyupWaiter.abort()
     }
 }

@@ -17,19 +17,17 @@
 import Vue from "vue";
 import Component from "vue-class-component"
 import Game from "@/cube";
-import {ActionExecutor} from "@/input/ActionExecutor";
+import {listenKeyboard} from "@/input";
 
 @Component({})
 export default class App extends Vue {
     orders = [1, 2, 3, 4, 5, 6, 7, 8]
     order = 3
     game: Game
-    actionExecutor: ActionExecutor
 
     mounted() {
         this.game = new Game(this.$refs['canvas'] as HTMLCanvasElement)
-        this.actionExecutor = new ActionExecutor(this.game.actions)
-        this.actionExecutor.listen()
+        listenKeyboard(this.game.actions)
     }
 
     orderSelected() {

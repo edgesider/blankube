@@ -4,5 +4,5 @@ declare module "*.vue" {
 }
 
 interface KeyboardEvent {
-    getName(): string
+    getDescription(): string
 }

@@ -1,4 +1,6 @@
-export default class EventWaiter<K extends keyof HTMLElementEventMap> {
+import {ISource} from "@/input/pipe";
+
+export default class DomEventSource<K extends keyof HTMLElementEventMap> implements ISource<HTMLElementEventMap[K]> {
     constructor(public readonly dom: HTMLElement | Document,
                 public readonly eventName: K,
                 public queueSize: number = -1) {
@@ -31,7 +33,7 @@ export default class EventWaiter<K extends keyof HTMLElementEventMap> {
         this._enabled = b
     }
 
-    async wait(): Promise<HTMLElementEventMap[K]> {
+    async get(): Promise<HTMLElementEventMap[K]> {
         if (this.queued.length > 0) {
             return this.queued.shift()
         } else {
@@ -50,5 +52,3 @@ export default class EventWaiter<K extends keyof HTMLElementEventMap> {
     }
 }
 
-export const DefaultKeyDownWaiter = new EventWaiter(document, 'keydown', 2)
-export const DefaultKeyUpWaiter = new EventWaiter(document, 'keyup', 2)
