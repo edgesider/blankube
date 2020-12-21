@@ -45,6 +45,8 @@ export default class Game {
     }
 
     reset(order = -1) {
+        if (order === -1)
+            order = this.cube.order
         this.setCamera(order * BLOCK_SIZE)
         // 放在raf函数里面，阶数切换的时候画面就不会跳动，目前不清楚原因，怀疑与相机的渲染时机有关
         requestAnimationFrame(() =>
