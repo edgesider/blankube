@@ -1,7 +1,7 @@
 import * as Three from 'three'
 import {PerspectiveCamera, Scene, WebGLRenderer} from 'three'
 import {RubikCube} from "@/cube/RubikCube";
-import {listenKey} from "@/cube/input";
+import {listenKeyboard} from "@/input/keyboard";
 import {BLOCK_SIZE, SCENE_COLOR} from "@/constants";
 import {CameraControl} from "@/cube/CameraControl";
 import Stats from "three/examples/jsm/libs/stats.module";
@@ -26,7 +26,7 @@ export default class Game {
         document.body.append(this.stats.dom)
         this.addLight()
         this.renderLoop()
-        listenKey(this.cube)
+        listenKeyboard(this)
     }
 
     scene: Scene
@@ -39,7 +39,7 @@ export default class Game {
     setCamera(cubeSize: number) {
         const distance = cubeSize * 5
         this.cameraControl?.dispose()
-        this.cameraControl = new CameraControl(this.camera, this.canvas,
+        this.cameraControl = new CameraControl(this.camera, document.body,
             distance, cubeSize * 6, cubeSize * 6)
         this.camera.updateProjectionMatrix()
     }

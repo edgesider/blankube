@@ -76,7 +76,7 @@ export class RubikCube {
         })
     }
 
-    async rotate(axis: 'x' | 'y' | 'z', clockwise: boolean) {
+    rotate = async (axis: 'x' | 'y' | 'z', clockwise: boolean) => {
         return new Promise<void>(resolve => {
             const axisVec = new Vector3()
             axisVec[axis] = clockwise ? -1 : 1
