@@ -32,8 +32,8 @@ export class CameraControl {
 
         this.lastAnimation = gsap.to(this, {
             xRate, yRate,
-            duration: .1,
-            ease: 'easeIn',
+            duration: .2,
+            ease: 'easeOut',
             onUpdate: () => {
                 const x = this.maxX * (this.xRate - 0.5),
                     y = -(this.maxY * (this.yRate - 0.5)),
