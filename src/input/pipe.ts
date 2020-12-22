@@ -1,13 +1,25 @@
+export abstract class Closable {
+    protected _closed = false
+
+    protected checkClose() {
+        if (this._closed) {
+            throw new Error('closed')
+        }
+    }
+
+    abstract close()
+}
+
 export interface ISource<T> {
     get(): Promise<T>
 
-    abort()
+    close()
 }
 
 export interface ISink<T> {
     put(o: T): Promise<any>
 
-    abort()
+    close()
 }
 
 export interface IMapper<TS, TD> {
@@ -17,40 +29,50 @@ export interface IMapper<TS, TD> {
 export interface IPipe<TS, TD> {
     join()
 
-    abort()
+    close()
 }
 
-export class Pipe<TS, TD> implements IPipe<TS, TD> {
+export class Pipe<TS, TD> extends Closable implements IPipe<TS, TD> {
     constructor(public source: ISource<TS>,
                 public sink: ISink<TD>,
                 public mapper: IMapper<TS, TD>) {
+        super()
     }
 
     join() {
+        this.checkClose()
         setTimeout(this.looper, 0)
     }
 
-    abort() {
-        // TODO
-        this.source.abort()
-        this.sink.abort()
-    }
-
     protected async get() {
+        this.checkClose()
         return await this.source.get()
     }
 
     protected async put(o: TD) {
+        this.checkClose()
         return await this.sink.put(o)
     }
 
     protected looper = async () => {
-        // noinspection InfiniteLoopJS
-        while (true) {
-            await this.put(
-                this.mapper.map(
-                    await this.get()))
+        try {
+            // noinspection InfiniteLoopJS
+            while (true) {
+                this.checkClose()
+                await this.put(
+                    this.mapper.map(
+                        await this.get()))
+            }
+        } catch (e) {
+            console.error(e)
         }
+    }
+
+    close() {
+        this._closed = true
+        // TODO exit looper
+        this.source.close()
+        this.sink.close()
     }
 }
 
@@ -93,7 +115,7 @@ export class CombinedSource<T> implements ISource<T> {
         }
     }
 
-    abort() {
+    close() {
     }
 
     private static NOT_EXISTS: any = {type: "Not Exists"}
@@ -110,7 +132,7 @@ export class FilterSinkWrapper<T> implements ISink<T> {
             return this.sink.put(o)
     }
 
-    abort() {
+    close() {
     }
 }
 
@@ -125,7 +147,7 @@ export class FuncSink<T> implements ISink<T> {
         return rv
     }
 
-    abort() {
+    close() {
     }
 }
 

@@ -1,9 +1,10 @@
-import {ISource} from "@/input/pipe";
+import {Closable, ISource} from "@/input/pipe";
 
-export default class DomEventSource<K extends keyof HTMLElementEventMap> implements ISource<HTMLElementEventMap[K]> {
+export default class DomEventSource<K extends keyof HTMLElementEventMap> extends Closable implements ISource<HTMLElementEventMap[K]> {
     constructor(public readonly dom: HTMLElement | Document,
                 public readonly eventName: K,
                 public queueSize: number = -1) {
+        super()
         this.enabled = true
     }
 
@@ -24,16 +25,17 @@ export default class DomEventSource<K extends keyof HTMLElementEventMap> impleme
     }
 
     set enabled(b) {
+        this.checkClose()
         if (b) {
             this.dom.addEventListener(this.eventName, this.onEvent)
         } else {
             this.dom.removeEventListener(this.eventName, this.onEvent)
-            this.abort()
         }
         this._enabled = b
     }
 
     async get(): Promise<HTMLElementEventMap[K]> {
+        this.checkClose()
         if (this.queued.length > 0) {
             return this.queued.shift()
         } else {
@@ -43,12 +45,12 @@ export default class DomEventSource<K extends keyof HTMLElementEventMap> impleme
         }
     }
 
-    /**
-     * reject等待中的Promise
-     */
-    abort() {
+    close() {
+        this.enabled = false
+        this._closed = true
         this.waiters.forEach(waiter => waiter[1](`EventWaiter [${this.eventName}] aborted`))
         this.waiters.length = 0
+        this.queued.length = 0
     }
 }
 

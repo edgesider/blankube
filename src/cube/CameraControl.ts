@@ -1,5 +1,5 @@
 import {Three} from ".";
-import gsap, {TweenMax} from "gsap";
+import gsap from "gsap";
 
 const DEFAULT_RATE_X = .75
 const DEFAULT_RATE_Y = .25
@@ -7,13 +7,27 @@ const DEFAULT_RATE_Y = .25
 export class CameraControl {
     constructor(public camera: Three.Camera, public domElement: HTMLElement,
                 public distance: number, public maxX: number, public maxY: number) {
-        domElement.addEventListener('mousemove', this.onMouseMove)
-        domElement.addEventListener('mouseenter', this.onMouseEnter)
-        domElement.addEventListener('mouseleave', this.onMouseLeave)
-        this.setRate(DEFAULT_RATE_X, DEFAULT_RATE_Y)
+        this.enabled = true
     }
 
-    lastAnimation?: TweenMax
+    private _enabled = false
+    get enabled() {
+        return this._enabled
+    }
+
+    set enabled(b) {
+        if (b) {
+            this.domElement.addEventListener('mousemove', this.onMouseMove)
+            this.domElement.addEventListener('mouseenter', this.onMouseEnter)
+            this.domElement.addEventListener('mouseleave', this.onMouseLeave)
+        } else {
+            this.domElement.removeEventListener('mousemove', this.onMouseMove)
+            this.domElement.removeEventListener('mouseenter', this.onMouseEnter)
+            this.domElement.removeEventListener('mouseleave', this.onMouseLeave)
+        }
+        this._enabled = b
+        this.setRate(this.xRate, this.yRate)
+    }
 
     xRate = DEFAULT_RATE_X
     yRate = DEFAULT_RATE_Y
@@ -27,10 +41,8 @@ export class CameraControl {
      * @param xRate [0-1]
      * @param yRate [0-1]
      */
-    setRate(xRate: number, yRate: number) {
-        this.lastAnimation?.kill()
-
-        this.lastAnimation = gsap.to(this, {
+    setRate(xRate: number = DEFAULT_RATE_X, yRate: number = DEFAULT_RATE_Y) {
+        gsap.to(this, {
             xRate, yRate,
             duration: .2,
             ease: 'easeOut',
@@ -42,11 +54,5 @@ export class CameraControl {
                 this.camera.lookAt(0, 0, 0)
             }
         })
-    }
-
-    dispose() {
-        this.domElement.removeEventListener('mousemove', this.onMouseMove)
-        this.domElement.removeEventListener('mouseenter', this.onMouseEnter)
-        this.domElement.removeEventListener('mouseleave', this.onMouseLeave)
     }
 }

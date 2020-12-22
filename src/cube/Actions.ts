@@ -1,30 +1,25 @@
-import Game from "@/cube/index";
-
-export type Action = () => any
+export type ActionName = keyof typeof Actions
 
 export default class Actions {
-    constructor(public game: Game) {
-    }
+    static r = 'r'
+    static r_rev = 'r_rev'
+    static l = 'l'
+    static l_rev = 'l_rev'
+    static f = 'f'
+    static f_rev = 'f_rev'
+    static b = 'b'
+    static b_rev = 'b_rev'
+    static u = 'u'
+    static u_rev = 'u_rev'
+    static d = 'd'
+    static d_rev = 'd_rev'
 
-    r: Action = this.game.cube.faces.r.action.bind(null, true)
-    r_rev: Action = this.game.cube.faces.r.action.bind(null, false)
-    l: Action = this.game.cube.faces.l.action.bind(null, true)
-    l_rev: Action = this.game.cube.faces.l.action.bind(null, false)
-    f: Action = this.game.cube.faces.f.action.bind(null, true)
-    f_rev: Action = this.game.cube.faces.f.action.bind(null, false)
-    b: Action = this.game.cube.faces.b.action.bind(null, true)
-    b_rev: Action = this.game.cube.faces.b.action.bind(null, false)
-    u: Action = this.game.cube.faces.u.action.bind(null, true)
-    u_rev: Action = this.game.cube.faces.u.action.bind(null, false)
-    d: Action = this.game.cube.faces.d.action.bind(null, true)
-    d_rev: Action = this.game.cube.faces.d.action.bind(null, false)
+    static x = 'x'
+    static x_rev = 'x_rev'
+    static y = 'y'
+    static y_rev = 'y_rev'
+    static z = 'z'
+    static z_rev = 'z_rev'
 
-    x: Action = this.game.cube.rotate.bind(null, 'x', true)
-    x_rev: Action = this.game.cube.rotate.bind(null, 'x', false)
-    y: Action = this.game.cube.rotate.bind(null, 'y', true)
-    y_rev: Action = this.game.cube.rotate.bind(null, 'y', false)
-    z: Action = this.game.cube.rotate.bind(null, 'z', true)
-    z_rev: Action = this.game.cube.rotate.bind(null, 'z', false)
-
-    reset: Action = this.game.reset.bind(this.game)
+    static reset = 'reset'
 }

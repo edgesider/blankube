@@ -1,12 +1,13 @@
-import {CombinedSource, ISource} from "@/input/pipe";
+import {Closable, CombinedSource, ISource} from "@/input/pipe";
 import DomEventSource from "@/input/DomEventSource";
 
-export default class ShortcutRecorder implements ISource<string> {
+export default class ShortcutRecorder extends Closable implements ISource<string> {
     private keydownSrc = new DomEventSource(document, 'keydown', 4)
     private keyupSrc = new DomEventSource(document, 'keyup', 4)
     private cmbSrc = new CombinedSource([this.keydownSrc, this.keyupSrc])
 
     async get(): Promise<string> {
+        this.checkClose()
         let key = ''
         while (true) {
             const ev = await this.cmbSrc.get()
@@ -19,6 +20,10 @@ export default class ShortcutRecorder implements ISource<string> {
         return key
     }
 
-    abort() {
+    close() {
+        this._closed = true
+        this.keydownSrc.close()
+        this.keyupSrc.close()
+        this.cmbSrc.close()
     }
 }

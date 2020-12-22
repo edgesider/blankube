@@ -10,6 +10,7 @@
             <button @click="toggleStats">Stats</button>
         </div>
         <canvas ref="canvas" id="cube"></canvas>
+        <action-input @toggle="onInputToggle"></action-input>
     </div>
 </template>
 
@@ -18,16 +19,22 @@ import Vue from "vue";
 import Component from "vue-class-component"
 import Game from "@/cube";
 import {listenKeyboard} from "@/input";
+import ActionInput from "@/components/ActionInput.vue";
+import {Pipe} from "@/input/pipe";
+import {ActionName} from "@/cube/Actions";
 
-@Component({})
+@Component({
+    components: {ActionInput}
+})
 export default class App extends Vue {
     orders = [1, 2, 3, 4, 5, 6, 7, 8]
     order = 3
     game: Game
+    keyPipe: Pipe<KeyboardEvent, ActionName>
 
     mounted() {
         this.game = new Game(this.$refs['canvas'] as HTMLCanvasElement)
-        listenKeyboard(this.game.actions)
+        this.keyPipe = listenKeyboard(this.game)
     }
 
     orderSelected() {
@@ -36,6 +43,14 @@ export default class App extends Vue {
 
     toggleStats() {
         this.game.statsEnabled = !this.game.statsEnabled
+    }
+
+    onInputToggle(open: boolean) {
+        if (open) {
+            this.keyPipe.close()
+        } else {
+            this.keyPipe = listenKeyboard(this.game)
+        }
     }
 }
 </script>

@@ -4,27 +4,27 @@ import {RubikCube} from "@/cube/RubikCube";
 import {BLOCK_SIZE, SCENE_COLOR} from "@/constants";
 import {CameraControl} from "@/cube/CameraControl";
 import Stats from "three/examples/jsm/libs/stats.module";
-import Actions from "@/cube/Actions";
+import ActionExecutor from "@/input/ActionExecutor";
 
 export * as Three from 'three'
 
 export default class Game {
     constructor(public canvas: HTMLCanvasElement) {
         this.scene = new Three.Scene()
+        this.scene.background = new Three.Color(SCENE_COLOR)
         this.camera = new Three.PerspectiveCamera(
             50, canvas.clientWidth / canvas.clientHeight, 0.1, 1000)
         this.renderer = new Three.WebGLRenderer({canvas, antialias: true, alpha: true})
-
-        this.onResize()
-        window.addEventListener('resize', this.onResize)
-        this.scene.background = new Three.Color(SCENE_COLOR)
-
         this.cube = new RubikCube(this.scene, 3)
-        this.setCamera(this.cube.cubeSize)
+        this.cameraControl = new CameraControl(this.camera, document.body,
+            this.cube.cubeSize * 5, this.cube.cubeSize * 6, this.cube.cubeSize * 6)
+        this.actionExecutor = new ActionExecutor(this)
 
         this.addLight()
         this.renderLoop()
-        this.actions = new Actions(this)
+        this.onResize()
+        window.addEventListener('resize', this.onResize)
+        this.setCamera(this.cube.cubeSize)
     }
 
     scene: Scene
@@ -32,13 +32,12 @@ export default class Game {
     cameraControl: CameraControl
     renderer: WebGLRenderer
     cube: RubikCube
-    actions: Actions
+    actionExecutor: ActionExecutor
 
     setCamera(cubeSize: number) {
-        const distance = cubeSize * 5
-        this.cameraControl?.dispose()
-        this.cameraControl = new CameraControl(this.camera, document.body,
-            distance, cubeSize * 6, cubeSize * 6)
+        this.cameraControl.distance = cubeSize * 5
+        this.cameraControl.maxX = this.cameraControl.maxY = cubeSize * 6
+        this.cameraControl.setRate()
         this.camera.updateProjectionMatrix()
     }
 
