@@ -3,13 +3,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = {
-    mode: "development",
     entry: './src/main.ts',
     output: {
-        filename: "index.js",
+        filename: "[name].js",
         path: path.resolve(__dirname, 'dist')
     },
-    devtool: 'source-map',
     module: {
         rules: [{
             test: /.ts$/,
@@ -33,13 +31,36 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({template: "./public/index.html"}),
-        new VueLoaderPlugin()
+        new VueLoaderPlugin(),
     ],
-    devServer: {
-        hot: true,
-        contentBase: path.resolve(__dirname, 'public')
+    optimization: {
+        splitChunks: {
+            chunks: "async",
+            automaticNameDelimiter: "~",
+            cacheGroups: {
+                three: {
+                    chunks: "initial",
+                    test: /node_modules\/three/,
+                    name: 'three',
+                    priority: 20,
+                    enforce: true
+                },
+                vendors: {
+                    chunks: "initial",
+                    test: /node_modules/,
+                    name: 'vendor',
+                    priority: 10,
+                    enforce: true
+                },
+                default: {
+                    priority: 0,
+                }
+            }
+        }
     },
     stats: {
-        modules: false
+        modules: false,
+        chunks: true,
+        assets: true,
     }
 }
