@@ -1,8 +1,8 @@
 <template>
-    <div id="main" @keydown.enter="inputFocus = true" tabindex="0">
+    <div id="main">
         <div class="header">
             <label for="method">控制方式
-                <select name="method" id="method" v-model="method" @change="onMethodChange">
+                <select name="method" id="method" v-model="method">
                     <option v-for="m in this.methods" :value="m">
                         {{ m }}
                     </option>
@@ -16,8 +16,11 @@
             <button @click="game.statsEnabled = !game.statsEnabled">Stats</button>
         </div>
         <canvas ref="canvas" id="cube"></canvas>
-        <action-input :show="showInput" @commit="onInputCommit"
-                      v-model:focus="inputFocus"></action-input>
+        <action-input :show="showInput"
+                      v-model:focus="inputFocus"
+                      @commit="onInputCommit"
+                      @wantClose="wantCloseInput"
+        ></action-input>
     </div>
 </template>
 
@@ -30,6 +33,7 @@ import ActionInput from "@/components/ActionInput.vue";
 import {Pipe} from "@/input/pipe";
 import {ActionName} from "@/cube/Actions";
 import {isNull} from "@/utils";
+import {Watch} from "vue-property-decorator";
 
 enum Method {
     none = 'None',
@@ -44,37 +48,49 @@ export default class App extends Vue {
     game: Game
     orders = [1, 2, 3, 4, 5, 6, 7, 8]
     order = 3
-    methods: Method[] = [Method.none, Method.input, Method.keyboard]
-    method: Method = Method.input
+    methods: Method[] = Object.values(Method)
+    method: Method = Method.none
 
     keyPipe: Pipe<KeyboardEvent, ActionName>
-    showInput = false
+
     inputFocus = false
     inputCommitting = false
+
+    get showInput() { return this.method === Method.input }
 
     mounted() {
         this.game = new Game(this.$refs['canvas'] as HTMLCanvasElement)
         this.game.statsEnabled = true
-        this.onMethodChange()
+        this.method = Method.none
+        document.addEventListener('keydown', ev =>
+            ev.getDescription() == 'ctrl+enter' ? this.wantFocusInput() : undefined)
     }
 
     onOrderSelect() {
         this.game.reset(this.order)
     }
 
-    onMethodChange() {
-        switch (this.method) {
+    wantFocusInput() {
+        this.method = Method.input
+        this.inputFocus = true
+    }
+
+    wantCloseInput() {
+        this.method = Method.keyboard
+        this.inputFocus = false
+    }
+
+    @Watch('method')
+    onMethodChange(m: Method) {
+        switch (m) {
             case Method.none:
                 this.keyPipe?.close()
-                this.showInput = false
                 break;
             case Method.keyboard:
-                this.showInput = false
                 this.keyPipe = listenKeyboard(this.game)
                 break;
             case Method.input:
                 this.keyPipe?.close()
-                this.showInput = true
                 break;
         }
     }

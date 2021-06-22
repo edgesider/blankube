@@ -1,8 +1,9 @@
 <template>
-    <div class="container" :class="{hide: !show}">
+    <div class="container" :class="{hide: !show}" @keydown.esc="$emit('wantClose')">
         <label class="main">
             <input ref="input" id="action-input" type="text"
-                   @keydown.enter="commit" v-model="value"
+                   v-model="value"
+                   @keydown.enter="$emit('commit', value)"
                    @blur="$emit('focusChange', false)"
                    @focus="$emit('focusChange', true)">
         </label>
@@ -13,6 +14,8 @@
 import Vue from "vue";
 import Component from "vue-class-component"
 import {Model, Prop, Watch} from "vue-property-decorator";
+
+const acceptChars = 'rludbf\''
 
 @Component({})
 export default class ActionInput extends Vue {
@@ -26,16 +29,23 @@ export default class ActionInput extends Vue {
     value: string = ''
 
     @Watch('focus')
-    toggleFocus(focus) {
-        if (focus) {
+    toggleFocus(value) {
+        if (value) {
             (this.$refs['input'] as HTMLInputElement).focus()
         } else {
             (this.$refs['input'] as HTMLInputElement).blur()
         }
     }
 
-    commit() {
-        this.$emit('commit', this.value)
+    @Watch('value')
+    checkInput(value: string) {
+        let res = ''
+        for (const c of value) {
+            if (acceptChars.indexOf(c) === -1)
+                continue
+            res += c
+        }
+        this.value = res
     }
 }
 </script>
@@ -54,7 +64,7 @@ export default class ActionInput extends Vue {
 }
 
 .container.hide {
-    transform: translateY(100%);
+    transform: translateY(120%);
 }
 
 .toggle {
