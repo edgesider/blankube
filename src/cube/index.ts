@@ -4,7 +4,7 @@ import {RubikCube} from "@/cube/RubikCube";
 import {BLOCK_SIZE, SCENE_COLOR} from "@/constants";
 import {CameraControl} from "@/cube/CameraControl";
 import Stats from "three/examples/jsm/libs/stats.module";
-import ActionExecutor from "@/input/ActionExecutor";
+import ActionExecutor from "@/cube/ActionExecutor";
 
 export * as Three from 'three'
 

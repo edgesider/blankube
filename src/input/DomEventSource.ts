@@ -46,6 +46,8 @@ export default class DomEventSource<K extends keyof HTMLElementEventMap> extends
     }
 
     close() {
+        if (this._closed)
+            return
         this.enabled = false
         this._closed = true
         this.waiters.forEach(waiter => waiter[1](`EventWaiter [${this.eventName}] aborted`))

@@ -21,6 +21,8 @@ export default class ShortcutRecorder extends Closable implements ISource<string
     }
 
     close() {
+        if (this._closed)
+            return
         this._closed = true
         this.keydownSrc.close()
         this.keyupSrc.close()

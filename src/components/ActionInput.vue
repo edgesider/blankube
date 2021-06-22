@@ -1,8 +1,10 @@
 <template>
     <div class="container" :class="{hide: !show}">
-        <button class="toggle" @click="toggle">^</button>
         <label class="main">
-            <input ref="input" id="action-input" type="text">
+            <input ref="input" id="action-input" type="text"
+                   @keydown.enter="commit" v-model="value"
+                   @blur="$emit('focusChange', false)"
+                   @focus="$emit('focusChange', true)">
         </label>
     </div>
 </template>
@@ -10,17 +12,30 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component"
+import {Model, Prop, Watch} from "vue-property-decorator";
 
 @Component({})
 export default class ActionInput extends Vue {
-    show: boolean = false
+    @Prop({default: false})
+    show: boolean
 
-    toggle() {
-        this.show = !this.show
-        if (this.show) {
+    @Model('focusChange')
+    @Prop({default: false})
+    focus: boolean
+
+    value: string = ''
+
+    @Watch('focus')
+    toggleFocus(focus) {
+        if (focus) {
             (this.$refs['input'] as HTMLInputElement).focus()
+        } else {
+            (this.$refs['input'] as HTMLInputElement).blur()
         }
-        this.$emit('toggle', this.show)
+    }
+
+    commit() {
+        this.$emit('commit', this.value)
     }
 }
 </script>
@@ -66,18 +81,17 @@ export default class ActionInput extends Vue {
 
 .main {
     display: block;
-    height: 20px;
     width: 600px;
     max-width: 80%;
     background-color: #444;
-    padding: 20px;
+    padding: 15px 20px;
     border-radius: 5px;
     border: 1px #000 solid;
     z-index: 10;
 }
 
 .main input {
-    height: 100%;
+    height: 30px;
     width: 100%;
     margin: 0;
     padding: 0;

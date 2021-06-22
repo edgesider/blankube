@@ -7,6 +7,10 @@ export abstract class Closable {
         }
     }
 
+    isClosed(): boolean {
+        return this._closed
+    }
+
     abstract close()
 }
 
@@ -69,6 +73,8 @@ export class Pipe<TS, TD> extends Closable implements IPipe<TS, TD> {
     }
 
     close() {
+        if (this._closed)
+            return
         this._closed = true
         // TODO exit looper
         this.source.close()
@@ -130,6 +136,15 @@ export class FilterSinkWrapper<T> implements ISink<T> {
     put(o: T): Promise<any> {
         if (this.filter(o))
             return this.sink.put(o)
+    }
+
+    close() {
+    }
+}
+
+export class ArraySource<T> implements ISource<T> {
+    get(): Promise<T> {
+        return Promise.resolve(undefined);
     }
 
     close() {

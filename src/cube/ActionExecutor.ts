@@ -1,6 +1,6 @@
 import {ActionName} from "@/cube/Actions";
 import {ISink} from "@/input/pipe";
-import Game from "@/cube";
+import Game from "@/cube/index";
 
 export type Action = () => any
 export default class ActionExecutor implements ISink<ActionName> {

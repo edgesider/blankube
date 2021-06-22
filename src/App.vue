@@ -1,16 +1,23 @@
 <template>
-    <div id="main">
+    <div id="main" @keydown.enter="inputFocus = true" tabindex="0">
         <div class="header">
-            <div>
-                <label for="order">阶数</label>
-                <select name="order" id="order" v-model="order" @change="orderSelected">
+            <label for="method">控制方式
+                <select name="method" id="method" v-model="method" @change="onMethodChange">
+                    <option v-for="m in this.methods" :value="m">
+                        {{ m }}
+                    </option>
+                </select>
+            </label>
+            <label for="order">阶数
+                <select name="order" id="order" v-model="order" @change="onOrderSelect">
                     <option v-for="o in orders" :value="o">{{ o }}阶</option>
                 </select>
-            </div>
-            <button @click="toggleStats">Stats</button>
+            </label>
+            <button @click="game.statsEnabled = !game.statsEnabled">Stats</button>
         </div>
         <canvas ref="canvas" id="cube"></canvas>
-        <action-input @toggle="onInputToggle"></action-input>
+        <action-input :show="showInput" @commit="onInputCommit"
+                      v-model:focus="inputFocus"></action-input>
     </div>
 </template>
 
@@ -22,34 +29,84 @@ import {listenKeyboard} from "@/input";
 import ActionInput from "@/components/ActionInput.vue";
 import {Pipe} from "@/input/pipe";
 import {ActionName} from "@/cube/Actions";
+import {isNull} from "@/utils";
+
+enum Method {
+    none = 'None',
+    keyboard = 'Keyboard',
+    input = 'Input'
+}
 
 @Component({
     components: {ActionInput}
 })
 export default class App extends Vue {
+    game: Game
     orders = [1, 2, 3, 4, 5, 6, 7, 8]
     order = 3
-    game: Game
+    methods: Method[] = [Method.none, Method.input, Method.keyboard]
+    method: Method = Method.input
+
     keyPipe: Pipe<KeyboardEvent, ActionName>
+    showInput = false
+    inputFocus = false
+    inputCommitting = false
 
     mounted() {
         this.game = new Game(this.$refs['canvas'] as HTMLCanvasElement)
-        this.keyPipe = listenKeyboard(this.game)
+        this.game.statsEnabled = true
+        this.onMethodChange()
     }
 
-    orderSelected() {
+    onOrderSelect() {
         this.game.reset(this.order)
     }
 
-    toggleStats() {
-        this.game.statsEnabled = !this.game.statsEnabled
+    onMethodChange() {
+        switch (this.method) {
+            case Method.none:
+                this.keyPipe?.close()
+                this.showInput = false
+                break;
+            case Method.keyboard:
+                this.showInput = false
+                this.keyPipe = listenKeyboard(this.game)
+                break;
+            case Method.input:
+                this.keyPipe?.close()
+                this.showInput = true
+                break;
+        }
     }
 
-    onInputToggle(open: boolean) {
-        if (open) {
-            this.keyPipe.close()
-        } else {
-            this.keyPipe = listenKeyboard(this.game)
+    async onInputCommit(str: string) {
+        if (this.inputCommitting)
+            return
+        this.inputCommitting = true
+        try {
+            await this.inputCommitInner(str)
+        } finally {
+            this.inputCommitting = false
+        }
+    }
+
+    async inputCommitInner(str: string) {
+        const actions = [],
+            checkRe = /^([rludfbxyz]'? *)+$/,
+            re = /[rludfbxyz]'? */y
+        if (!checkRe.test(str)) {
+            console.error('invalid input')
+            return
+        }
+        while (true) {
+            const o = re.exec(str)
+            if (isNull(o))
+                break
+            actions.push(o[0])
+        }
+
+        for (const act of actions) {
+            await this.game.actionExecutor.put(act.replace('\'', '_rev'))
         }
     }
 }
@@ -75,6 +132,14 @@ export default class App extends Vue {
     background-color: #222;
     color: white;
     z-index: 1;
+}
+
+.header > * {
+    margin-right: 10px;
+}
+
+.header > *:last-child {
+    margin-right: 0;
 }
 
 #cube {
