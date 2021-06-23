@@ -4,8 +4,8 @@
             <input ref="input" id="action-input" type="text"
                    v-model="value"
                    @keydown.enter="$emit('commit', value)"
-                   @blur="$emit('focusChange', false)"
-                   @focus="$emit('focusChange', true)">
+                   @blur="$emit('update:focus', false)"
+                   @focus="$emit('update:focus', true)">
         </label>
     </div>
 </template>
@@ -13,7 +13,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component"
-import {Model, Prop, Watch} from "vue-property-decorator";
+import {Prop, Watch} from "vue-property-decorator";
 
 const acceptChars = 'rludbf\''
 
@@ -22,7 +22,6 @@ export default class ActionInput extends Vue {
     @Prop({default: false})
     show: boolean
 
-    @Model('focusChange')
     @Prop({default: false})
     focus: boolean
 

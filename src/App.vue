@@ -17,9 +17,9 @@
         </div>
         <canvas ref="canvas" id="cube"></canvas>
         <action-input :show="showInput"
-                      v-model:focus="inputFocus"
-                      @commit="onInputCommit"
                       @wantClose="wantCloseInput"
+                      :focus.sync="inputFocus"
+                      @commit="onInputCommit"
         ></action-input>
     </div>
 </template>
@@ -80,7 +80,7 @@ export default class App extends Vue {
         this.inputFocus = false
     }
 
-    @Watch('method')
+    @Watch('method', {immediate: true})
     onMethodChange(m: Method) {
         switch (m) {
             case Method.none:
