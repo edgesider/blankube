@@ -61,7 +61,7 @@ export default class App extends Vue {
     mounted() {
         this.game = new Game(this.$refs['canvas'] as HTMLCanvasElement)
         this.game.statsEnabled = true
-        this.method = Method.none
+        this.method = Method.keyboard
         document.addEventListener('keydown', ev =>
             ev.getDescription() == 'ctrl+enter' ? this.wantFocusInput() : undefined)
     }
