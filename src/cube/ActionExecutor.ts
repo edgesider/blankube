@@ -5,7 +5,13 @@ import Game from "@/cube/index";
 export type Action = () => any
 export default class ActionExecutor implements ISink<ActionName> {
     constructor(public game: Game) {
+        if (game.actionExecutor) {
+            throw Error('This game instance has an existed ActionExecutor')
+        }
     }
+
+    undoStack: ActionName[] = []
+    redoStack: ActionName[] = []
 
     actions: { [index: string]: Action | undefined } = {
         r: this.game.cube.faces.r.action.bind(null, true),
@@ -29,14 +35,46 @@ export default class ActionExecutor implements ISink<ActionName> {
         z_rev: this.game.cube.rotate.bind(null, 'z', false),
 
         reset: this.game.reset.bind(this.game),
+
+        undo: this.undo.bind(this),
+        redo: this.redo.bind(this),
     }
 
-    async put(o: ActionName): Promise<any> {
-        const act = this.actions[o]
-        if (act)
-            await act()
+    async put(o: ActionName) {
+        if (['undo', 'redo', 'reset'].indexOf(o) !== -1) {
+            // TODO 支持reset
+            await this.do(o, false);
+        } else {
+            await this.do(o);
+            this.redoStack.length = 0
+        }
     }
 
-    close() {
+    async do(name: ActionName, record = true) {
+        const act = this.actions[name]
+        if (!act)
+            return
+        await act()
+        if (record)
+            this.undoStack.push(name)
     }
+
+    async undo() {
+        const lastAction = this.undoStack.pop()
+        if (!lastAction)
+            return
+        const revAction = (lastAction.endsWith('_rev') ?
+            lastAction.replace('_rev', '') : (lastAction + '_rev')) as ActionName
+        await this.do(revAction, false)
+        this.redoStack.splice(0, 0, lastAction)
+    }
+
+    async redo() {
+        const act = this.redoStack.shift()
+        if (!act)
+            return
+        await this.do(act)
+    }
+
+    close() {}
 }

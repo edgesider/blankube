@@ -22,4 +22,7 @@ export default class Actions {
     static z_rev = 'z_rev'
 
     static reset = 'reset'
+
+    static undo = 'undo'
+    static redo = 'redo'
 }
