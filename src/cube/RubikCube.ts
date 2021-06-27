@@ -8,8 +8,6 @@ import {BLOCK_SIZE, HALF_PI, ROTATE_DURATION, ROTATE_EASE} from "@/constants";
 export class RubikCube {
     constructor(public scene: Three.Scene,
                 public order: number) {
-        this.cubeSize = BLOCK_SIZE * order;
-
         this.createBlocks()
         this.createFaces()
         this.createPieces()
@@ -17,7 +15,9 @@ export class RubikCube {
         scene.add(...Object.values(this.faces).map(f => f.dummy))
     }
 
-    cubeSize: number
+    get cubeSize(): number {
+        return this.order * BLOCK_SIZE
+    }
 
     faces: Readonly<{ [key: string]: Face }>
     blocks = new Array<Block>()
@@ -94,9 +94,8 @@ export class RubikCube {
     }
 
     reset(order = -1) {
-        if (order !== -1) {
+        if (order > 0) {
             this.order = order
-            this.cubeSize = BLOCK_SIZE * order
         }
         this.blocks.length = 0
         this.blockContainer.clear()

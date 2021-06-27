@@ -40,6 +40,7 @@ export default class Game {
         this.cube.reset(order)
         gsap.to(this.cameraControl, {
             distance: order * BLOCK_SIZE * 4, duration: .5,
+            ease: 'easeOut',
             onUpdate: () => this.cameraControl.updateCamera()
         })
     }
