@@ -1,10 +1,11 @@
 import * as Three from 'three'
 import {PerspectiveCamera, Scene, WebGLRenderer} from 'three'
 import {RubikCube} from "@/cube/RubikCube";
-import {BLOCK_SIZE, SCENE_COLOR} from "@/constants";
+import {BLOCK_SIZE, PI, SCENE_COLOR} from "@/constants";
 import {CameraControl} from "@/cube/CameraControl";
 import Stats from "three/examples/jsm/libs/stats.module";
 import ActionExecutor from "@/cube/ActionExecutor";
+import gsap from "gsap";
 
 export * as Three from 'three'
 
@@ -17,14 +18,13 @@ export default class Game {
         this.renderer = new Three.WebGLRenderer({canvas, antialias: true, alpha: true})
         this.cube = new RubikCube(this.scene, 3)
         this.cameraControl = new CameraControl(this.camera, document.body,
-            this.cube.cubeSize * 5, this.cube.cubeSize * 6, this.cube.cubeSize * 6)
+            this.cube.cubeSize * 4, PI / 3, PI / 3)
         this.actionExecutor = new ActionExecutor(this)
 
         this.addLight()
         this.renderLoop()
         this.onResize()
         window.addEventListener('resize', this.onResize)
-        this.setCamera(this.cube.cubeSize)
     }
 
     scene: Scene
@@ -34,21 +34,14 @@ export default class Game {
     cube: RubikCube
     actionExecutor: ActionExecutor
 
-    setCamera(cubeSize: number) {
-        this.cameraControl.distance = cubeSize * 5
-        this.cameraControl.maxX = this.cameraControl.maxY = cubeSize * 6
-        this.cameraControl.setRate()
-        this.camera.updateProjectionMatrix()
-    }
-
     reset(order = -1) {
         if (order === -1)
             order = this.cube.order
-        this.setCamera(order * BLOCK_SIZE)
-        // 放在raf函数里面，阶数切换的时候画面就不会跳动，目前不清楚原因，怀疑与相机的渲染时机有关
-        requestAnimationFrame(() =>
-            this.cube.reset(order)
-        )
+        this.cube.reset(order)
+        gsap.to(this.cameraControl, {
+            distance: order * BLOCK_SIZE * 4, duration: .5,
+            onUpdate: () => this.cameraControl.updateCamera()
+        })
     }
 
     private stats = Stats()
