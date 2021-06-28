@@ -1,11 +1,10 @@
 import * as Three from 'three'
 import {PerspectiveCamera, Scene, WebGLRenderer} from 'three'
 import {RubikCube} from "@/cube/RubikCube";
-import {BLOCK_SIZE, PI, SCENE_COLOR} from "@/constants";
-import {CameraControl} from "@/cube/CameraControl";
+import {camera, SCENE_COLOR} from "@/constants";
+import {RateCameraControl} from "@/cube/RateCameraControl";
 import Stats from "three/examples/jsm/libs/stats.module";
 import ActionExecutor from "@/cube/ActionExecutor";
-import gsap from "gsap";
 
 export * as Three from 'three'
 
@@ -17,8 +16,10 @@ export default class Game {
             50, canvas.clientWidth / canvas.clientHeight, 0.1, 1000)
         this.renderer = new Three.WebGLRenderer({canvas, antialias: true, alpha: true})
         this.cube = new RubikCube(this.scene, 3)
-        this.cameraControl = new CameraControl(this.camera, document.body,
-            this.cube.cubeSize * 4, PI / 3, PI / 3)
+        this.cameraControl = new RateCameraControl(
+            this.camera, document.body, this.cube.cubeSize * camera.radiusScale,
+            camera.lngRange, camera.latRange,
+            camera.defaultXRate, camera.defaultYRate)
         this.actionExecutor = new ActionExecutor(this)
 
         this.addLight()
@@ -29,7 +30,7 @@ export default class Game {
 
     scene: Scene
     camera: PerspectiveCamera
-    cameraControl: CameraControl
+    cameraControl: RateCameraControl
     renderer: WebGLRenderer
     cube: RubikCube
     actionExecutor: ActionExecutor
@@ -38,11 +39,7 @@ export default class Game {
         if (order === -1)
             order = this.cube.order
         this.cube.reset(order)
-        gsap.to(this.cameraControl, {
-            distance: order * BLOCK_SIZE * 4, duration: .5,
-            ease: 'easeOut',
-            onUpdate: () => this.cameraControl.updateCamera()
-        })
+        this.cameraControl.setRadius(this.cube.cubeSize * camera.radiusScale)
     }
 
     private stats = Stats()
