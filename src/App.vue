@@ -107,6 +107,11 @@ export default class App extends Vue {
     }
 
     async inputCommitInner(str: string) {
+        while (this.game.actionExecutor.undoStack.length != 0)
+            await this.game.actionExecutor.put('undo')
+        while (this.game.actionExecutor.redoStack.length > 2)
+            await this.game.actionExecutor.put('redo')
+        return
         const actions = [],
             checkRe = /^([rludfbxyz]'? *)+$/,
             re = /[rludfbxyz]'? */y

@@ -11,35 +11,38 @@ export abstract class Closable {
         return this._closed
     }
 
-    abstract close()
+    close() {
+        const first = this._closed == false
+        this._closed = true
+        this.afterClose(first)
+    }
+
+    protected afterClose(firstClose: boolean) {}
 }
 
 export interface ISource<T> {
     get(): Promise<T>
-
-    close()
 }
 
 export interface ISink<T> {
     put(o: T): Promise<any>
-
-    close()
 }
 
-export interface IMapper<TS, TD> {
+export interface IMapper<TS, TD> extends ISink<TD> {
     map(o: TS): TD
 }
 
-export interface IPipe<TS, TD> {
-    join()
-
-    close()
+export interface IFilter<T> extends ISink<T> {
+    accept(o: T): boolean
 }
 
-export class Pipe<TS, TD> extends Closable implements IPipe<TS, TD> {
-    constructor(public source: ISource<TS>,
-                public sink: ISink<TD>,
-                public mapper: IMapper<TS, TD>) {
+export interface IPipe<T> {
+    join()
+}
+
+export class Pipe<T> extends Closable implements IPipe<T> {
+    constructor(public source: ISource<T>,
+                public sink: ISink<T>) {
         super()
     }
 
@@ -53,7 +56,7 @@ export class Pipe<TS, TD> extends Closable implements IPipe<TS, TD> {
         return await this.source.get()
     }
 
-    protected async put(o: TD) {
+    protected async put(o: T) {
         this.checkClose()
         return await this.sink.put(o)
     }
@@ -63,28 +66,21 @@ export class Pipe<TS, TD> extends Closable implements IPipe<TS, TD> {
             // noinspection InfiniteLoopJS
             while (true) {
                 this.checkClose()
-                await this.put(
-                    this.mapper.map(
-                        await this.get()))
+                await this.put(await this.get())
             }
         } catch (e) {
             console.error(e)
         }
     }
 
-    close() {
-        if (this._closed)
-            return
-        this._closed = true
+    afterClose() {
         // TODO exit looper
-        this.source.close()
-        this.sink.close()
-    }
-}
-
-export class SelfMapper<T> implements IMapper<T, T> {
-    map(o: T): T {
-        return o
+        if (this.source instanceof Closable) {
+            this.source.close()
+        }
+        if (this.sink instanceof Closable) {
+            this.sink.close()
+        }
     }
 }
 
@@ -128,7 +124,7 @@ export class CombinedSource<T> implements ISource<T> {
     private static GETTING: any = {type: "Getting"}
 }
 
-export class FilterSinkWrapper<T> implements ISink<T> {
+export class FilterSinkWrapper<T> implements IFilter<T> {
     constructor(public filter: (o: T) => boolean,
                 public sink: ISink<T>) {
     }
@@ -138,7 +134,8 @@ export class FilterSinkWrapper<T> implements ISink<T> {
             return this.sink.put(o)
     }
 
-    close() {
+    accept(o: T): boolean {
+        return this.filter(o)
     }
 }
 
