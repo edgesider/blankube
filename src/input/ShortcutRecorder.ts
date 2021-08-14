@@ -1,7 +1,7 @@
-import {Closable, CombinedSource, ISource} from "@/input/pipe";
+import {CombinedSource, AbsSource} from "@/input/pipe";
 import DomEventSource from "@/input/DomEventSource";
 
-export default class ShortcutRecorder extends Closable implements ISource<string> {
+export default class ShortcutRecorder extends AbsSource<string> {
     private keydownSrc = new DomEventSource(document, 'keydown', 4)
     private keyupSrc = new DomEventSource(document, 'keyup', 4)
     private cmbSrc = new CombinedSource([this.keydownSrc, this.keyupSrc])

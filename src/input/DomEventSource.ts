@@ -1,6 +1,6 @@
-import {Closable, ISource} from "@/input/pipe";
+import {AbsSource} from "@/input/pipe";
 
-export default class DomEventSource<K extends keyof HTMLElementEventMap> extends Closable implements ISource<HTMLElementEventMap[K]> {
+export default class DomEventSource<K extends keyof HTMLElementEventMap> extends AbsSource<HTMLElementEventMap[K]> {
     constructor(public readonly dom: HTMLElement | Document,
                 public readonly eventName: K,
                 public queueSize: number = -1) {

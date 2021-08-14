@@ -20,35 +20,32 @@ export abstract class Closable {
     protected afterClose(firstClose: boolean) {}
 }
 
-export interface ISource<T> {
-    get(): Promise<T>
+export abstract class AbsSource<T> extends Closable {
+    abstract get(): Promise<T>
+
+    public map<TD>(f: (T) => TD): AbsSource<TD> {
+        return new MappedSource(this, f)
+    }
+
+    public filter(f: (T) => boolean): AbsSource<T> {
+        return new FilteredSource(this, f)
+    }
 }
 
 export interface ISink<T> {
     put(o: T): Promise<any>
 }
 
-export interface IMapper<TS, TD> extends ISink<TD> {
-    map(o: TS): TD
-}
-
-export interface IFilter<T> extends ISink<T> {
-    accept(o: T): boolean
-}
-
-export interface IPipe<T> {
-    join()
-}
-
-export class Pipe<T> extends Closable implements IPipe<T> {
-    constructor(public source: ISource<T>,
+export class Pipe<T> extends Closable {
+    constructor(public source: AbsSource<T>,
                 public sink: ISink<T>) {
         super()
     }
 
-    join() {
+    join(): Pipe<T> {
         this.checkClose()
         setTimeout(this.looper, 0)
+        return this
     }
 
     protected async get() {
@@ -74,7 +71,7 @@ export class Pipe<T> extends Closable implements IPipe<T> {
     }
 
     afterClose() {
-        // TODO exit looper
+        // TODO initiative exit looper
         if (this.source instanceof Closable) {
             this.source.close()
         }
@@ -84,8 +81,9 @@ export class Pipe<T> extends Closable implements IPipe<T> {
     }
 }
 
-export class CombinedSource<T> implements ISource<T> {
-    constructor(public sources: ISource<T>[]) {
+export class CombinedSource<T> extends AbsSource<T> {
+    constructor(public sources: AbsSource<T>[]) {
+        super()
         this.cache = this.sources.map(() => CombinedSource.NOT_EXISTS)
     }
 
@@ -124,42 +122,27 @@ export class CombinedSource<T> implements ISource<T> {
     private static GETTING: any = {type: "Getting"}
 }
 
-export class FilterSinkWrapper<T> implements IFilter<T> {
-    constructor(public filter: (o: T) => boolean,
-                public sink: ISink<T>) {
+class MappedSource<S, D> extends AbsSource<D> {
+    constructor(public origin: AbsSource<S>, public mapper: (S) => D) {
+        super()
     }
 
-    put(o: T): Promise<any> {
-        if (this.filter(o))
-            return this.sink.put(o)
-    }
-
-    accept(o: T): boolean {
-        return this.filter(o)
+    async get(): Promise<D> {
+        return Promise.resolve(this.mapper(await this.origin.get()))
     }
 }
 
-export class ArraySource<T> implements ISource<T> {
-    get(): Promise<T> {
-        return Promise.resolve(undefined);
+class FilteredSource<T> extends AbsSource<T> {
+    constructor(public origin: AbsSource<T>, public f: (T) => boolean) {
+        super();
     }
 
-    close() {
-    }
-}
-
-export class FuncSink<T> implements ISink<T> {
-    constructor(public f: (o: T) => any) {
-    }
-
-    put(o: T): Promise<any> {
-        let rv = this.f(o)
-        if (!(rv instanceof Promise))
-            rv = Promise.resolve(rv)
-        return rv
-    }
-
-    close() {
+    async get(): Promise<T> {
+        while (true) {
+            const v = await this.origin.get()
+            if (!this.f(v))
+                continue
+            return v
+        }
     }
 }
-
