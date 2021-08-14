@@ -1,5 +1,5 @@
 <template>
-    <div class="container" :class="{hide: !show}" @keydown.esc="$emit('wantClose')">
+    <div class="container">
         <label class="main">
             <input ref="input" id="action-input" type="text" spellcheck="false"
                    v-model="value"
@@ -19,9 +19,6 @@ const acceptChars = 'rludbf\''
 
 @Component({})
 export default class ActionInput extends Vue {
-    @Prop({default: false})
-    show: boolean
-
     @Prop({default: false})
     focus: boolean
 
@@ -52,11 +49,6 @@ export default class ActionInput extends Vue {
 <!--suppress CssUnusedSymbol -->
 <style scoped>
 .container {
-    position: fixed;
-    width: 100vw;
-    bottom: 5px;
-    z-index: 10;
-    transition: all .3s ease-out;
     display: flex;
     flex-direction: column;
     align-items: center;

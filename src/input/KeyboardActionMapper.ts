@@ -30,6 +30,8 @@ KeyboardEvent.prototype.getDescription = function (): string {
     let s = ''
     if (this.ctrlKey)
         s += 'ctrl+'
+    if (this.metaKey)
+        s += 'meta+'
     if (this.altKey)
         s += 'alt+'
     if (this.shiftKey)

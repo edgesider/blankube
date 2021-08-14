@@ -1,5 +1,5 @@
 <template>
-    <div id="main">
+    <div id="app">
         <div class="header">
             <label for="method">控制方式
                 <select name="method" id="method" v-model="method">
@@ -16,11 +16,13 @@
             <button @click="game.statsEnabled = !game.statsEnabled">Stats</button>
         </div>
         <canvas ref="canvas" id="cube"></canvas>
-        <action-input :show="showInput"
-                      @wantClose="wantCloseInput"
-                      :focus.sync="inputFocus"
-                      @commit="onInputCommit"
-        ></action-input>
+        <div class="bottom" @keydown.esc="switchToKeyboard">
+            <control-panel :action-executor="game ? game.actionExecutor : null"></control-panel>
+            <action-input :show="showInput"
+                          :focus.sync="inputFocus"
+                          @commit="onInputCommit"
+            ></action-input>
+        </div>
     </div>
 </template>
 
@@ -34,6 +36,7 @@ import {Pipe} from "@/input/pipe";
 import {ActionName} from "@/cube/Actions";
 import {isNull} from "@/utils";
 import {Watch} from "vue-property-decorator";
+import ControlPanel from "@/components/ControlPanel.vue";
 
 enum Method {
     none = 'None',
@@ -42,10 +45,10 @@ enum Method {
 }
 
 @Component({
-    components: {ActionInput}
+    components: {ControlPanel, ActionInput}
 })
 export default class App extends Vue {
-    game: Game
+    game: Game = null
     orders = [1, 2, 3, 4, 5, 6, 7, 8]
     order = 3
     methods: Method[] = Object.values(Method)
@@ -63,21 +66,20 @@ export default class App extends Vue {
         this.game.statsEnabled = true
         this.method = Method.keyboard
         document.addEventListener('keydown', ev =>
-            ev.getDescription() == 'ctrl+enter' ? this.wantFocusInput() : undefined)
+            ev.getDescription() == 'ctrl+enter' ? this.switchToInput() : undefined)
     }
 
     onOrderSelect() {
         this.game.reset(this.order)
     }
 
-    wantFocusInput() {
+    switchToInput() {
         this.method = Method.input
         this.inputFocus = true
     }
 
-    wantCloseInput() {
+    switchToKeyboard() {
         this.method = Method.keyboard
-        this.inputFocus = false
     }
 
     @Watch('method', {immediate: true})
@@ -93,6 +95,8 @@ export default class App extends Vue {
                 this.keyPipe?.close()
                 break;
         }
+
+        this.inputFocus = m == Method.input
     }
 
     async onInputCommit(str: string) {
@@ -129,7 +133,7 @@ export default class App extends Vue {
 </script>
 
 <style>
-#main {
+#app {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -164,5 +168,13 @@ export default class App extends Vue {
     position: absolute;
     top: 0;
     left: 0;
+}
+
+.bottom {
+    width: 100vw;
+    z-index: 10;
+    position: fixed;
+    bottom: 5px;
+    transition: all .3s ease-out;
 }
 </style>

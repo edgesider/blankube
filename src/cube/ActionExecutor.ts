@@ -2,11 +2,17 @@ import {ActionName} from "@/cube/Actions";
 import {ISink} from "@/input/pipe";
 import Game from "@/cube/index";
 
+/**
+ * basic action: rludfb, reset
+ * Undo(action)
+ * Redo(action)
+ */
+
 export type Action = () => any
 export default class ActionExecutor implements ISink<ActionName> {
     constructor(public game: Game) {
         if (game.actionExecutor) {
-            throw Error('This game instance has an existed ActionExecutor')
+            throw Error('This game instance already has an existed ActionExecutor')
         }
     }
 
@@ -50,15 +56,6 @@ export default class ActionExecutor implements ISink<ActionName> {
         }
     }
 
-    async do(name: ActionName, record = true) {
-        const act = this.actions[name]
-        if (!act)
-            return
-        await act()
-        if (record)
-            this.undoStack.push(name)
-    }
-
     async undo() {
         const lastAction = this.undoStack.pop()
         if (!lastAction)
@@ -74,6 +71,19 @@ export default class ActionExecutor implements ISink<ActionName> {
         if (!act)
             return
         await this.do(act)
+    }
+
+    async reset() {
+        await this.do('reset')
+    }
+
+    async do(name: ActionName, record = true) {
+        const act = this.actions[name]
+        if (!act)
+            return
+        await act()
+        if (record)
+            this.undoStack.push(name)
     }
 
     close() {}
