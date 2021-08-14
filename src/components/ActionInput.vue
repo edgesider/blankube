@@ -1,7 +1,7 @@
 <template>
     <div class="container" :class="{hide: !show}" @keydown.esc="$emit('wantClose')">
         <label class="main">
-            <input ref="input" id="action-input" type="text"
+            <input ref="input" id="action-input" type="text" spellcheck="false"
                    v-model="value"
                    @keydown.enter="$emit('commit', value)"
                    @blur="$emit('update:focus', false)"
