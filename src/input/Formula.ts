@@ -10,8 +10,6 @@ import {FaceName} from "@/cube/Face";
  * rm0 rm1
  * r'
  * ...
- *
- * 0 -> reset
  */
 
 const moveRe = /(?<face>[udfbrlUDFBRL])(?<multilayer>m?)(?<layer>\d*)|(?<axis>[xyzXYZ])/
