@@ -13,7 +13,7 @@ export default class ShortcutRecorder extends AbsSource<string> {
             const ev = await this.cmbSrc.get()
             ev.preventDefault()
             if (ev.type === 'keydown')
-                key = ev.getDescription()
+                key = ev.getDescriptor()
             else if (ev.type === 'keyup' && key)
                 break
         }

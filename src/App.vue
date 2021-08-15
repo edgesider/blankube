@@ -33,10 +33,10 @@ import Game from "@/cube";
 import {listenKeyboard} from "@/input";
 import ActionInput from "@/components/ActionInput.vue";
 import {Pipe} from "@/input/pipe";
-import {ActionName} from "@/cube/Actions";
 import {isNull} from "@/utils";
 import {Watch} from "vue-property-decorator";
 import ControlPanel from "@/components/ControlPanel.vue";
+import {IMove} from "@/cube/Mover";
 
 enum Method {
     none = 'None',
@@ -54,7 +54,7 @@ export default class App extends Vue {
     methods: Method[] = Object.values(Method)
     method: Method = Method.none
 
-    keyPipe: Pipe<ActionName>
+    keyPipe: Pipe<IMove>
 
     inputFocus = false
     inputCommitting = false
@@ -66,7 +66,7 @@ export default class App extends Vue {
         this.game.statsEnabled = true
         this.method = Method.keyboard
         document.addEventListener('keydown', ev =>
-            ev.getDescription() == 'ctrl+enter' ? this.switchToInput() : undefined)
+            ev.getDescriptor() == 'ctrl+enter' ? this.switchToInput() : undefined)
     }
 
     onOrderSelect() {

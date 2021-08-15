@@ -47,7 +47,7 @@ export class Face {
         )
     }
 
-    action = async (clockwise: boolean) => {
+    move = async (clockwise: boolean) => {
         this.collect()
         return new Promise<void>(resolve => {
             gsap.to(this, {

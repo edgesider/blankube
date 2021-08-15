@@ -15,6 +15,13 @@ import Vue from "vue";
 import {Prop} from "vue-property-decorator";
 import ActionExecutor from "@/cube/ActionExecutor";
 
+/**
+ * TODO
+ * - 更换为图片
+ * - 设置按钮的可用状态
+ * - 快捷键
+ */
+
 @Component({})
 export default class ControlPanel extends Vue {
     @Prop({required: true})
@@ -33,6 +40,8 @@ export default class ControlPanel extends Vue {
 .container > ul, .btn {
     appearance: none;
     list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .container > ul {

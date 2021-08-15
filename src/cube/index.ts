@@ -5,6 +5,7 @@ import {camera, SCENE_COLOR} from "@/constants";
 import {RateCameraControl} from "@/cube/RateCameraControl";
 import Stats from "three/examples/jsm/libs/stats.module";
 import ActionExecutor from "@/cube/ActionExecutor";
+import Mover from "@/cube/Mover";
 
 export * as Three from 'three'
 
@@ -21,6 +22,7 @@ export default class Game {
             camera.lngRange, camera.latRange,
             camera.defaultXRate, camera.defaultYRate)
         this.actionExecutor = new ActionExecutor(this)
+        this.mover = new Mover(this.cube)
 
         this.addLight()
         this.renderLoop()
@@ -34,6 +36,7 @@ export default class Game {
     renderer: WebGLRenderer
     cube: RubikCube
     actionExecutor: ActionExecutor
+    mover: Mover
 
     reset(order = -1) {
         if (order === -1)

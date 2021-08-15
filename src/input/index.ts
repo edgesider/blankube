@@ -1,12 +1,12 @@
 import DomEventSource from "./DomEventSource";
 import {Pipe} from "@/input/pipe";
-import keyboardActionMapper from "@/input/KeyboardActionMapper";
+import {keyboardMoveMapper} from "@/input/KeyboardActionMapper";
 import Game from "@/cube";
-import {ActionName} from "@/cube/Actions";
+import {IMove} from "@/cube/Mover";
 
-export function listenKeyboard(game: Game): Pipe<ActionName> {
+export function listenKeyboard(game: Game): Pipe<IMove> {
     const keySrc = new DomEventSource(document, 'keydown', 1)
-        .map(keyboardActionMapper)
+        .map(keyboardMoveMapper)
         .filter(act => !!act)
-    return new Pipe(keySrc, game.actionExecutor).join()
+    return new Pipe(keySrc, game.mover).join()
 }
