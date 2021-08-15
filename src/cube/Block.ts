@@ -1,6 +1,7 @@
 import * as Three from "three";
 import {DoubleSide, Mesh} from "three";
 import {BLOCK_SIZE, colors, PIECE_SIZE} from "@/constants";
+import {FaceName} from "@/cube/Face";
 
 const initColorMap = {
     r: 'red', l: 'orange',
@@ -23,8 +24,17 @@ Object.entries(colors).map(([name, color]) =>
 )
 
 export class Piece extends Mesh {
-    constructor(public color: keyof typeof colors) {
-        super(pieceGeometry, pieceMaterials[color]);
+    /**
+     * 初始面决定了颜色
+     * @param initFace
+     */
+    constructor(public initFace: FaceName) {
+        super(pieceGeometry, pieceMaterials[initColorMap[initFace]]);
+    }
+
+    updateInitFace(initFace: FaceName) {
+        this.initFace = initFace
+        this.material = pieceMaterials[initColorMap[initFace]]
     }
 }
 
@@ -35,8 +45,8 @@ export class Block extends Mesh {
 
     pieces = new Array<Piece>()
 
-    addPiece(faceName: string): Piece {
-        const piece = new Piece(initColorMap[faceName])
+    addPiece(initFace: FaceName): Piece {
+        const piece = new Piece(initFace)
         this.add(piece)
         this.pieces.push(piece)
         return piece

@@ -108,4 +108,15 @@ export class RubikCube {
     isResolved() {
         return Object.values(this.faces).every(f => f.isResolved())
     }
+
+    toDescriptor(): string {
+        return ['u', 'd', 'f', 'b', 'r', 'l'].map(f => this.faces[f].toDescriptor()).join(';')
+    }
+
+    fromDescriptor(sd: string) {
+        const faceSds = sd.split(';');
+        ['u', 'd', 'f', 'b', 'r', 'l'].forEach((f, i) => {
+            this.faces[f].fromDescriptor(faceSds[i])
+        })
+    }
 }

@@ -17,6 +17,11 @@ export abstract class TraceableMove implements IMove {
     abstract redo(cube: RubikCube): Promise<any>
 }
 
+/**
+ * 层移动
+ * 如果multilayer为true，则移动face面的前layer层；
+ *   如果为false，则移动face面的第layer层。
+ */
 export class LayerMove extends TraceableMove {
     constructor(public readonly clockwise: boolean,  // 顺时针
                 public readonly face: FaceName,  // 面
@@ -66,25 +71,24 @@ export class BodyMove extends TraceableMove {
     }
 }
 
-/**
- * TODO 状态描述，支持undo
- *  u:...;d:...;f:...;b:...;l:...;r:...
- */
 class ResetMove extends TraceableMove {
     constructor() {
         super()
     }
 
+    descriptor: string = null
+
     async do(cube: RubikCube) {
+        this.descriptor = cube.toDescriptor()
         await cube.reset()
     }
 
     async undo(cube: RubikCube) {
-        console.error("not yet supported")
+        cube.fromDescriptor(this.descriptor)
     }
 
     async redo(cube: RubikCube) {
-        console.error("not yet supported")
+        await this.do(cube)
     }
 
     toString(): string {
@@ -120,7 +124,6 @@ export default class Mover implements ISink<IMove> {
     redoStack: TraceableMove[] = []
 
     async put(m: IMove): Promise<any> {
-        console.log(`${m}`)
         if (m instanceof TraceableMove) {
             this.undoStack.push(m)
             this.redoStack.length = 0
