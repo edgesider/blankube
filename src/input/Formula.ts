@@ -14,7 +14,7 @@ import {FaceName} from "@/cube/Face";
 
 const moveRe = /(?<face>[udfbrlUDFBRL])(?<multilayer>m?)(?<layer>\d*)|(?<axis>[xyzXYZ])/
 
-export default class Formula {
+export default class FormulaParser {
     static parseSingle(str: string): LayerMove | BodyMove | null {
         str = str.trim()
         return this.parseMatchGroup(moveRe.exec(str)?.groups)
@@ -68,11 +68,11 @@ export default class Formula {
 
     static test() {
         function t(s) {
-            console.log(s, Formula.parseSingle(s)?.toString())
+            console.log(s, FormulaParser.parseSingle(s)?.toString())
         }
 
         function t2(s) {
-            console.log(s, Formula.parseFormula(s))
+            console.log(s, FormulaParser.parseFormula(s))
         }
 
         ['r', 'R', 'r0', 'rm0', 'rm1', 'rm10', 'k', 'rm', 'x', 'x0'].forEach(t)

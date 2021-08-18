@@ -18,8 +18,7 @@
         <canvas ref="canvas" id="cube"></canvas>
         <div class="bottom" @keydown.esc="switchToKeyboard">
             <control-panel></control-panel>
-            <action-input :show="showInput"
-                          :focus.sync="inputFocus"
+            <action-input :focus.sync="inputFocus"
                           @commit="onInputCommit"
             ></action-input>
         </div>
@@ -30,13 +29,14 @@
 import Vue from "vue";
 import Component from "vue-class-component"
 import Game from "@/cube";
-import {listenKeyboard} from "@/input";
 import ActionInput from "@/components/ActionInput.vue";
-import {Pipe} from "@/input/pipe";
-import {isNull} from "@/utils";
+import {Pipe, QueuedSource} from "@/input/pipe";
 import {Watch} from "vue-property-decorator";
 import ControlPanel from "@/components/ControlPanel.vue";
 import {IMove} from "@/cube/Mover";
+import {DomEventSource} from "@/input/EventSource";
+import {keyboardMoveMapper} from "@/input/KeyboardActionMapper";
+import FormulaParser from "@/input/Formula";
 
 enum Method {
     none = 'None',
@@ -54,12 +54,11 @@ export default class App extends Vue {
     methods: Method[] = Object.values(Method)
     method: Method = Method.none
 
-    keyPipe: Pipe<IMove>
+    pipe: Pipe<IMove>
+    formulaSource: QueuedSource<string>
 
     inputFocus = false
     inputCommitting = false
-
-    get showInput() { return this.method === Method.input }
 
     mounted() {
         this.game = new Game(this.$refs['canvas'] as HTMLCanvasElement)
@@ -67,6 +66,7 @@ export default class App extends Vue {
         this.method = Method.keyboard
         document.addEventListener('keydown', ev =>
             ev.getDescriptor() == 'ctrl+enter' ? this.switchToInput() : undefined)
+        global['cube'] = this.game.cube
     }
 
     onOrderSelect() {
@@ -86,13 +86,25 @@ export default class App extends Vue {
     onMethodChange(m: Method) {
         switch (m) {
             case Method.none:
-                this.keyPipe?.close()
+                this.pipe?.close()
+                this.pipe = new Pipe(null, null)
                 break;
             case Method.keyboard:
-                this.keyPipe = listenKeyboard(this.game)
+                this.pipe?.close()
+                this.pipe = new Pipe(
+                    new DomEventSource(document, 'keydown', 1)
+                        .map(keyboardMoveMapper)
+                        .filter(act => !!act),
+                    this.game.mover)
+                    .join()
                 break;
             case Method.input:
-                this.keyPipe?.close()
+                this.pipe?.close()
+                this.formulaSource = new QueuedSource()
+                this.pipe = new Pipe(
+                    this.formulaSource.mapFlat(str => FormulaParser.parseFormula(str)),
+                    this.game.mover)
+                    .join()
                 break;
         }
 
@@ -104,29 +116,9 @@ export default class App extends Vue {
             return
         this.inputCommitting = true
         try {
-            await this.inputCommitInner(str)
+            this.formulaSource.add(str)
         } finally {
             this.inputCommitting = false
-        }
-    }
-
-    async inputCommitInner(str: string) {
-        const actions = [],
-            checkRe = /^([rludfbxyz]'? *)+$/,
-            re = /[rludfbxyz]'? */y
-        if (!checkRe.test(str)) {
-            console.error('invalid input')
-            return
-        }
-        while (true) {
-            const o = re.exec(str)
-            if (isNull(o))
-                break
-            actions.push(o[0])
-        }
-
-        for (const act of actions) {
-            // await this.game.actionExecutor.put(act.replace('\'', '_rev'))
         }
     }
 }

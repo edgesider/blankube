@@ -1,5 +1,5 @@
 import {CombinedSource, AbsSource} from "@/input/pipe";
-import DomEventSource from "@/input/DomEventSource";
+import {DomEventSource} from "@/input/EventSource";
 
 export default class ShortcutRecorder extends AbsSource<string> {
     private keydownSrc = new DomEventSource(document, 'keydown', 4)

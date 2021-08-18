@@ -12,12 +12,13 @@ export abstract class Closable {
     }
 
     close() {
-        const first = this._closed == false
-        this._closed = true
-        this.afterClose(first)
+        if (!this._closed) {
+            this._closed = true
+            this.afterClose()
+        }
     }
 
-    protected afterClose(firstClose: boolean) {}
+    protected afterClose() {}
 }
 
 export abstract class AbsSource<T> extends Closable {
@@ -25,6 +26,10 @@ export abstract class AbsSource<T> extends Closable {
 
     public map<TD>(f: (T) => TD): AbsSource<TD> {
         return new MappedSource(this, f)
+    }
+
+    public mapFlat<TD>(f: (T) => Array<TD>): AbsSource<TD> {
+        return new FlattedSource(this.map(f))
     }
 
     public filter(f: (T) => boolean): AbsSource<T> {
@@ -115,34 +120,124 @@ export class CombinedSource<T> extends AbsSource<T> {
         }
     }
 
-    close() {
+    protected afterClose() {
+        this.sources.forEach(it => it.close())
     }
 
     private static NOT_EXISTS: any = {type: "Not Exists"}
     private static GETTING: any = {type: "Getting"}
 }
 
+export class QueuedSource<T> extends AbsSource<T> {
+    constructor(public queueSize: number = -1) {
+        super()
+    }
+
+    private _enabled = false
+    private waiters: [Function, Function][] = []
+    private queued: T[] = []
+
+    get enabled() {
+        return this._enabled
+    }
+
+    set enabled(b) {
+        this.checkClose()
+        if (this._enabled != b) {
+            this._enabled = b
+            this.afterEnableChanged(b)
+        }
+    }
+
+    protected afterEnableChanged(enable) {}
+
+    add(item: T) {
+        const waiter = this.waiters.shift()
+        if (waiter) {
+            waiter[0].call(null, item)
+        } else if (this.queued.length < this.queueSize) {
+            this.queued.push(item)
+        }
+    }
+
+    async get(): Promise<T> {
+        this.checkClose()
+        if (this.queued.length > 0) {
+            return this.queued.shift()
+        } else {
+            return new Promise((res, rej) => {
+                this.waiters.push([res, rej])
+            })
+        }
+    }
+
+    close() {
+        this.enabled = false
+        super.close();
+    }
+
+    protected afterClose() {
+        this.waiters.forEach(waiter => waiter[1](`source closed`))
+        this.waiters.length = 0
+        this.queued.length = 0
+    }
+}
+
 class MappedSource<S, D> extends AbsSource<D> {
-    constructor(public origin: AbsSource<S>, public mapper: (S) => D) {
+    constructor(public readonly origin: AbsSource<S>, public readonly mapper: (S) => D) {
         super()
     }
 
     async get(): Promise<D> {
+        this.checkClose()
         return Promise.resolve(this.mapper(await this.origin.get()))
+    }
+
+    protected afterClose() {
+        this.origin.close()
     }
 }
 
 class FilteredSource<T> extends AbsSource<T> {
-    constructor(public origin: AbsSource<T>, public f: (T) => boolean) {
+    constructor(public readonly origin: AbsSource<T>, public readonly f: (T) => boolean) {
         super();
     }
 
     async get(): Promise<T> {
+        this.checkClose()
         while (true) {
             const v = await this.origin.get()
             if (!this.f(v))
                 continue
             return v
         }
+    }
+
+    protected afterClose() {
+        this.origin.close()
+    }
+}
+
+class FlattedSource<TA> extends AbsSource<TA> {
+    constructor(public readonly origin: AbsSource<Array<TA>>,
+                public readonly usePop = false) {
+        super();
+    }
+
+    private arr: Array<TA> = null
+
+    async get(): Promise<TA> {
+        this.checkClose()
+        if (!this.arr || this.arr.length === 0) {
+            this.arr = await this.origin.get()
+        }
+        if (this.usePop)
+            return this.arr.pop()
+        else
+            return this.arr.shift()
+    }
+
+    protected afterClose() {
+        this.origin.close()
     }
 }
