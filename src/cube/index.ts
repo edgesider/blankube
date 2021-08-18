@@ -4,11 +4,14 @@ import {RubikCube} from "@/cube/RubikCube";
 import {camera, SCENE_COLOR} from "@/constants";
 import {RateCameraControl} from "@/cube/RateCameraControl";
 import Stats from "three/examples/jsm/libs/stats.module";
-import ActionExecutor from "@/cube/ActionExecutor";
 import Mover from "@/cube/Mover";
 
 export * as Three from 'three'
 
+/**
+ * TODO 更换阶数时重置Mover
+ * TODO 按过程重构：Mover过程
+ */
 export default class Game {
     constructor(public canvas: HTMLCanvasElement) {
         this.scene = new Three.Scene()
@@ -21,7 +24,6 @@ export default class Game {
             this.camera, document.body, this.cube.cubeSize * camera.radiusScale,
             camera.lngRange, camera.latRange,
             camera.defaultXRate, camera.defaultYRate)
-        this.actionExecutor = new ActionExecutor(this)
         this.mover = new Mover(this.cube)
 
         this.addLight()
@@ -35,7 +37,6 @@ export default class Game {
     cameraControl: RateCameraControl
     renderer: WebGLRenderer
     cube: RubikCube
-    actionExecutor: ActionExecutor
     mover: Mover
 
     reset(order = -1) {

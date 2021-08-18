@@ -1,38 +1,6 @@
-import Actions, {ActionName} from "@/cube/Actions";
 import Mover, {BodyMove, IMove, LayerMove} from "@/cube/Mover";
 
-/**
- * TODO
- * ctrl+i，ctrl+o进退
- */
-
 const keyMap = {
-    'r': Actions.r,
-    'shift+r': Actions.r_rev,
-    'l': Actions.l,
-    'shift+l': Actions.l_rev,
-    'u': Actions.u,
-    'shift+u': Actions.u_rev,
-    'd': Actions.d,
-    'shift+d': Actions.d_rev,
-    'f': Actions.f,
-    'shift+f': Actions.f_rev,
-    'b': Actions.b,
-    'shift+b': Actions.b_rev,
-    'x': Actions.x,
-    'shift+x': Actions.x_rev,
-    'y': Actions.y,
-    'shift+y': Actions.y_rev,
-    'z': Actions.z,
-    'shift+z': Actions.z_rev,
-    'space': Actions.reset
-}
-
-export default function keyboardActionMapper(o: KeyboardEvent): ActionName {
-    return keyMap[o.getDescriptor()]
-}
-
-const keyMap2 = {
     'r': new LayerMove(true, 'r', 0, false),
     'shift+r': new LayerMove(false, 'r', 0, false),
     'l': new LayerMove(true, 'l', 0, false),
@@ -61,7 +29,7 @@ const keyMap2 = {
 }
 
 export function keyboardMoveMapper(ev: KeyboardEvent): IMove {
-    return keyMap2[ev.getDescriptor()]
+    return keyMap[ev.getDescriptor()]
 }
 
 KeyboardEvent.prototype.getDescriptor = function (): string {

@@ -1,9 +1,9 @@
 <template>
     <div class="container">
         <ul>
-            <li class="btn" @click="actionExecutor.reset()"><<</li>
-            <li class="btn" @click="actionExecutor.undo()"><</li>
-            <li class="btn" @click="actionExecutor.redo()">></li>
+            <li class="btn" @click=""><<</li>
+            <li class="btn" @click=""><</li>
+            <li class="btn" @click="">></li>
             <li class="btn">>></li>
         </ul>
     </div>
@@ -13,7 +13,6 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import {Prop} from "vue-property-decorator";
-import ActionExecutor from "@/cube/ActionExecutor";
 
 /**
  * TODO
@@ -24,8 +23,8 @@ import ActionExecutor from "@/cube/ActionExecutor";
 
 @Component({})
 export default class ControlPanel extends Vue {
-    @Prop({required: true})
-    actionExecutor: ActionExecutor
+    // @Prop({required: true})
+    // actionExecutor: ActionExecutor
 }
 </script>
 

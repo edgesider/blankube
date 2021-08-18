@@ -17,7 +17,7 @@
         </div>
         <canvas ref="canvas" id="cube"></canvas>
         <div class="bottom" @keydown.esc="switchToKeyboard">
-            <control-panel :action-executor="game ? game.actionExecutor : null"></control-panel>
+            <control-panel></control-panel>
             <action-input :show="showInput"
                           :focus.sync="inputFocus"
                           @commit="onInputCommit"
@@ -126,7 +126,7 @@ export default class App extends Vue {
         }
 
         for (const act of actions) {
-            await this.game.actionExecutor.put(act.replace('\'', '_rev'))
+            // await this.game.actionExecutor.put(act.replace('\'', '_rev'))
         }
     }
 }

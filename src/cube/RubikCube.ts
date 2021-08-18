@@ -109,14 +109,18 @@ export class RubikCube {
         return Object.values(this.faces).every(f => f.isResolved())
     }
 
+    /**
+     * u=xxxxxxxxx;d=xxxxxxxxx;f=xxxxxxxxx;b=xxxxxxxxx;r=xxxxxxxxx;l=xxxxxxxxx
+     */
     toDescriptor(): string {
-        return ['u', 'd', 'f', 'b', 'r', 'l'].map(f => this.faces[f].toDescriptor()).join(';')
+        return ['u', 'd', 'f', 'b', 'r', 'l'].map(
+            f => f + '=' + this.faces[f].toDescriptor()).join(';')
     }
 
     fromDescriptor(sd: string) {
         const faceSds = sd.split(';');
         ['u', 'd', 'f', 'b', 'r', 'l'].forEach((f, i) => {
-            this.faces[f].fromDescriptor(faceSds[i])
+            this.faces[f].fromDescriptor(faceSds[i].split('=')[1])
         })
     }
 }
