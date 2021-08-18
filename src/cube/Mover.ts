@@ -125,6 +125,10 @@ export default class Mover implements ISink<IMove> {
 
     async put(m: IMove): Promise<any> {
         if (m instanceof TraceableMove) {
+            if (m instanceof ResetMove && this.undoStack[this.undoStack.length - 1] instanceof ResetMove) {
+                // 忽略连续的ResetMove
+                return
+            }
             this.undoStack.push(m)
             this.redoStack.length = 0
             await m.do(this.cube)
