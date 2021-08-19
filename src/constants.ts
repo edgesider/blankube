@@ -24,8 +24,8 @@ export const colors = {
  */
 export namespace camera {
     export const radiusScale = 4  // 相机球面半径与魔方宽度的比值
-    export const lngRange = PI / 2  // 相机移动的经度范围
-    export const latRange = PI / 3  // 相机移动的纬度范围
+    export const lngRange = PI / 1.5  // 相机移动的经度范围
+    export const latRange = PI / 1.5  // 相机移动的纬度范围
     export const defaultXRate = 0.75  // 默认的X轴比例
     export const defaultYRate = 0.25  // 默认的Y轴比例
 }
