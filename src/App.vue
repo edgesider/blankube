@@ -18,7 +18,8 @@
         <canvas ref="canvas" id="cube"></canvas>
         <div class="bottom" @keydown.esc="switchToKeyboard">
             <control-panel></control-panel>
-            <action-input :focus.sync="inputFocus"
+            <action-input :enabled="isInput"
+                          :focus.sync="inputFocus"
                           @commit="onInputCommit"
             ></action-input>
         </div>
@@ -69,13 +70,17 @@ export default class App extends Vue {
         global['cube'] = this.game.cube
     }
 
+    get isInput() { return this.method === Method.input }
+
+    get isKeyboard() { return this.method === Method.keyboard }
+
     onOrderSelect() {
         this.game.reset(this.order)
     }
 
     switchToInput() {
         this.method = Method.input
-        this.inputFocus = true
+        this.$nextTick(() => this.inputFocus = true)
     }
 
     switchToKeyboard() {
@@ -108,7 +113,7 @@ export default class App extends Vue {
                 break;
         }
 
-        this.inputFocus = m == Method.input
+        this.$nextTick(() => { this.inputFocus = m === Method.input })
     }
 
     async onInputCommit(str: string) {

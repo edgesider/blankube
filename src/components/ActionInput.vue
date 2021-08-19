@@ -1,7 +1,8 @@
 <template>
     <div class="container">
-        <label class="main">
+        <label class="main" :class="{error}">
             <input ref="input" id="action-input" type="text" spellcheck="false"
+                   :disabled="!enabled"
                    v-model="value"
                    @keydown.enter="$emit('commit', value)"
                    @blur="$emit('update:focus', false)"
@@ -14,15 +15,17 @@
 import Vue from "vue";
 import Component from "vue-class-component"
 import {Prop, Watch} from "vue-property-decorator";
-
-const acceptChars = 'rludbf\''
+import FormulaParser from "@/input/Formula";
 
 @Component({})
 export default class ActionInput extends Vue {
     @Prop({default: false})
+    enabled: boolean
+    @Prop({default: false})
     focus: boolean
 
     value: string = ''
+    error = false
 
     @Watch('focus')
     toggleFocus(value) {
@@ -33,15 +36,9 @@ export default class ActionInput extends Vue {
         }
     }
 
-    @Watch('value')
+    @Watch('value', {immediate: true})
     checkInput(value: string) {
-        let res = ''
-        for (const c of value) {
-            if (acceptChars.indexOf(c) === -1)
-                continue
-            res += c
-        }
-        this.value = res
+        this.error = !!value && !FormulaParser.checkFormula(value)  // 不为空且不正确
     }
 }
 </script>
@@ -81,6 +78,7 @@ export default class ActionInput extends Vue {
 }
 
 .main {
+    position: relative;
     display: block;
     width: 600px;
     max-width: 80%;
@@ -113,5 +111,17 @@ export default class ActionInput extends Vue {
 
 .main input::selection {
     background-color: #777;
+}
+
+.main.error::after {
+    content: "Error";
+    color: red;
+    position: absolute;
+    right: 10px;
+    top: 0;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 </style>

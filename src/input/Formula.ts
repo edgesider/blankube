@@ -12,27 +12,34 @@ import {FaceName} from "@/cube/Face";
  * ...
  */
 
-const moveRe = /(?<face>[udfbrlUDFBRL])(?<multilayer>m?)(?<layer>\d*)|(?<axis>[xyzXYZ])/
+const phraseRe = /((?<face>[udfbrlUDFBRL])(?<multilayer>m?)(?<layer>\d*)|(?<axis>[xyz]))(?<anticlock>'?)/
+const checkRe = new RegExp(`^((${phraseRe.source}) *)+$`)
+const formulaRe = new RegExp(`(${phraseRe.source}) *`, 'y')
 
 export default class FormulaParser {
     static parseSingle(str: string): LayerMove | BodyMove | null {
         str = str.trim()
-        return this.parseMatchGroup(moveRe.exec(str)?.groups)
+        return this.parseMatchGroup(phraseRe.exec(str)?.groups)
     }
 
     static parseFormula(str: string): (LayerMove | BodyMove)[] {
-        const checkRe = new RegExp(`^((${moveRe.source}) *)+$`),
-            re = new RegExp(`(${moveRe.source}) *`, 'y')
-        if (!checkRe.test(str))
-            return null
+        if (!FormulaParser.checkFormula(str)) {
+            console.log('formula check failed')
+            return []
+        }
         const moves: (LayerMove | BodyMove) [] = []
         while (true) {
-            const m = this.parseMatchGroup(re.exec(str)?.groups)
+            const m = this.parseMatchGroup(formulaRe.exec(str)?.groups)
             if (!m)
                 break
             moves.push(m)
         }
+        console.log(moves)
         return moves
+    }
+
+    static checkFormula(str: string): boolean {
+        return checkRe.test(str)
     }
 
     private static parseMatchGroup(group: { [p: string]: string }): LayerMove | BodyMove | null {
@@ -48,20 +55,14 @@ export default class FormulaParser {
             if (!group['face'])
                 return null
             const face = group['face'].toLowerCase() as FaceName
+            const clockwise = !group['anticlock']
 
-            let multilayer: boolean
-            if (group['multilayer'] === 'm')
-                multilayer = true
-            else if (group['multilayer'] === '')
-                multilayer = false
-            else
-                return null
+            let multilayer = group['multilayer'] === 'm'
 
-            const layer = group['layer'] === '' ? 0 : Number.parseInt(group['layer'])
+            let layer = !group['layer'] ? 0 : Number.parseInt(group['layer'])
             if (isNaN(layer))
-                return null
+                layer = 0
 
-            const clockwise = face === group['face']
             return new LayerMove(clockwise, face as FaceName, layer, multilayer)
         }
     }
