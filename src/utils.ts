@@ -54,3 +54,16 @@ export function addAxis(obj) {
     corZObj.rotateOnAxis(new Three.Vector3(1, 0, 0), Math.PI / 2)
     obj.add(corX, corYObj, corZObj)
 }
+
+/**
+ * 判断当前浏览器是否有Vimium插件
+ */
+export function hasVimiumPlugin() {
+    const div = document.createElement('div')
+    div.style.display = 'none'
+    div.classList.add('vimiumHUD')
+    document.body.append(div)
+    const zIndex = window.getComputedStyle(div).zIndex
+    document.body.removeChild(div)
+    return zIndex !== ''
+}

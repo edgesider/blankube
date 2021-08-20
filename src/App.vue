@@ -23,6 +23,9 @@
                           @commit="onInputCommit"
             ></action-input>
         </div>
+
+        <!-- Vimium检测框 -->
+        <div class="vimiumCheck" v-show="hasVimium">提示：检测到浏览器正在使用Vimium插件，为了更好的体验，建议在本页面中禁用该插件</div>
     </div>
 </template>
 
@@ -38,6 +41,7 @@ import {IMove} from "@/cube/Mover";
 import {DomEventSource} from "@/input/EventSource";
 import {keyboardMoveMapper} from "@/input/KeyboardActionMapper";
 import FormulaParser from "@/input/Formula";
+import {hasVimiumPlugin} from "@/utils";
 
 enum Method {
     none = 'None',
@@ -61,6 +65,8 @@ export default class App extends Vue {
     inputFocus = false
     inputCommitting = false
 
+    hasVimium = false
+
     mounted() {
         this.game = new Game(this.$refs['canvas'] as HTMLCanvasElement)
         this.game.statsEnabled = true
@@ -68,6 +74,8 @@ export default class App extends Vue {
         document.addEventListener('keydown', ev =>
             ev.getDescriptor() == 'ctrl+enter' ? this.switchToInput() : undefined)
         global['cube'] = this.game.cube
+        global['hasVimium'] = hasVimiumPlugin
+        this.hasVimium = hasVimiumPlugin()
     }
 
     get isInput() { return this.method === Method.input }
@@ -173,5 +181,16 @@ export default class App extends Vue {
     position: fixed;
     bottom: 5px;
     transition: all .3s ease-out;
+}
+
+.vimiumCheck {
+    position: fixed;
+    width: 100%;
+    height: 36px;
+    top: 10%;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
 }
 </style>
