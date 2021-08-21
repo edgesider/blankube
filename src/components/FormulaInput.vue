@@ -4,7 +4,7 @@
             <input ref="input" id="action-input" type="text" spellcheck="false"
                    :disabled="!enabled"
                    v-model="value"
-                   @keydown.enter="$emit('commit', value)"
+                   @keydown.enter="bindEnter"
                    @blur="$emit('update:focus', false)"
                    @focus="$emit('update:focus', true)">
         </label>
@@ -18,7 +18,7 @@ import {Prop, Watch} from "vue-property-decorator";
 import FormulaParser from "@/input/Formula";
 
 @Component({})
-export default class ActionInput extends Vue {
+export default class FormulaInput extends Vue {
     @Prop({default: false})
     enabled: boolean
     @Prop({default: false})
@@ -37,8 +37,14 @@ export default class ActionInput extends Vue {
     }
 
     @Watch('value', {immediate: true})
-    checkInput(value: string) {
+    checkInput(value: string): boolean {
         this.error = !!value && !FormulaParser.checkFormula(value)  // 不为空且不正确
+        return !this.error
+    }
+
+    bindEnter() {
+        if (this.checkInput(this.value))
+            this.$emit('commit', FormulaParser.parseFormula(this.value))
     }
 }
 </script>

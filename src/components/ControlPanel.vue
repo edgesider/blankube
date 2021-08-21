@@ -1,10 +1,9 @@
 <template>
     <div class="container">
         <ul>
-            <li class="btn" @click=""><<</li>
-            <li class="btn" @click=""><</li>
-            <li class="btn" @click="">></li>
-            <li class="btn">>></li>
+            <li class="btn" @click="bindUndo"><</li>
+            <li class="btn" @click="bindRedo">></li>
+            <li class="btn" @click="bindReset">reset</li>
         </ul>
     </div>
 </template>
@@ -13,6 +12,7 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import {Prop} from "vue-property-decorator";
+import Mover from "@/cube/Mover";
 
 /**
  * TODO
@@ -23,8 +23,26 @@ import {Prop} from "vue-property-decorator";
 
 @Component({})
 export default class ControlPanel extends Vue {
-    // @Prop({required: true})
-    // actionExecutor: ActionExecutor
+    @Prop({default: false})
+    enabled: boolean
+
+    bindUndo() {
+        if (!this.enabled)
+            return
+        this.$emit('commit', Mover.UndoMove)
+    }
+
+    bindRedo() {
+        if (!this.enabled)
+            return
+        this.$emit('commit', Mover.RedoMove)
+    }
+
+    bindReset() {
+        if (!this.enabled)
+            return
+        this.$emit('commit', Mover.ResetMove)
+    }
 }
 </script>
 
@@ -55,7 +73,8 @@ export default class ControlPanel extends Vue {
     position: relative;
     color: white;
     display: block;
-    width: 30px;
+    /*width: 30px;*/
+    padding: 0 10px;
     height: 30px;
     font-size: 14px;
     line-height: 30px;

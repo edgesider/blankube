@@ -104,6 +104,7 @@ export class CombinedSource<T> extends AbsSource<T> {
                 this.sources
                     .filter((s, idx) => this.cache[idx] !== CombinedSource.GETTING)
                     .forEach(async (s, idx) => {
+                        this.cache[idx] = CombinedSource.GETTING
                         const o = await s.get()
                         if (this.needResolve.length > 0) {
                             this.needResolve.shift()(o)
@@ -129,7 +130,7 @@ export class CombinedSource<T> extends AbsSource<T> {
 }
 
 export class QueuedSource<T> extends AbsSource<T> {
-    constructor(public queueSize: number = -1) {
+    constructor(public queueSize: number = 0) {
         super()
     }
 

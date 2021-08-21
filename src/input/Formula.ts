@@ -34,7 +34,6 @@ export default class FormulaParser {
                 break
             moves.push(m)
         }
-        console.log(moves)
         return moves
     }
 

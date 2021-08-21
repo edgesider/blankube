@@ -17,11 +17,13 @@
         </div>
         <canvas ref="canvas" id="cube"></canvas>
         <div class="bottom" @keydown.esc="switchToKeyboard">
-            <control-panel></control-panel>
-            <action-input :enabled="isInput"
-                          :focus.sync="inputFocus"
-                          @commit="onInputCommit"
-            ></action-input>
+            <control-panel :enabled="isKeyboard"
+                           @commit="onControlPanelCommit"
+            ></control-panel>
+            <formula-input :enabled="isInput"
+                           :focus.sync="inputFocus"
+                           @commit="onFormulaCommit"
+            ></formula-input>
         </div>
     </div>
 </template>
@@ -30,14 +32,13 @@
 import Vue from "vue";
 import Component from "vue-class-component"
 import Game from "@/cube";
-import ActionInput from "@/components/ActionInput.vue";
-import {Pipe, QueuedSource} from "@/input/pipe";
+import FormulaInput from "@/components/FormulaInput.vue";
+import {CombinedSource, Pipe, QueuedSource} from "@/input/pipe";
 import {Watch} from "vue-property-decorator";
 import ControlPanel from "@/components/ControlPanel.vue";
 import {IMove} from "@/cube/Mover";
 import {DomEventSource} from "@/input/EventSource";
 import {keyboardMoveMapper} from "@/input/KeyboardActionMapper";
-import FormulaParser from "@/input/Formula";
 
 enum Method {
     none = 'None',
@@ -46,7 +47,7 @@ enum Method {
 }
 
 @Component({
-    components: {ControlPanel, ActionInput}
+    components: {ControlPanel, FormulaInput}
 })
 export default class App extends Vue {
     game: Game = null
@@ -56,10 +57,10 @@ export default class App extends Vue {
     method: Method = Method.none
 
     pipe: Pipe<IMove>
-    formulaSource: QueuedSource<string>
+    controlPanelSource: QueuedSource<IMove>
+    formulaSource: QueuedSource<IMove[]>
 
     inputFocus = false
-    inputCommitting = false
 
     mounted() {
         this.game = new Game(this.$refs['canvas'] as HTMLCanvasElement)
@@ -96,19 +97,18 @@ export default class App extends Vue {
                 break;
             case Method.keyboard:
                 this.pipe?.close()
+                const keySrc = new DomEventSource(document, 'keydown', 1)
+                    .map(keyboardMoveMapper)
+                    .filter(act => !!act)
+                this.controlPanelSource = new QueuedSource()
                 this.pipe = new Pipe(
-                    new DomEventSource(document, 'keydown', 1)
-                        .map(keyboardMoveMapper)
-                        .filter(act => !!act),
-                    this.game.mover)
+                    new CombinedSource([keySrc, this.controlPanelSource]), this.game.mover)
                     .join()
                 break;
             case Method.input:
                 this.pipe?.close()
                 this.formulaSource = new QueuedSource()
-                this.pipe = new Pipe(
-                    this.formulaSource.mapFlat(str => FormulaParser.parseFormula(str)),
-                    this.game.mover)
+                this.pipe = new Pipe(this.formulaSource.mapFlat<IMove>(it => it), this.game.mover)
                     .join()
                 break;
         }
@@ -116,15 +116,12 @@ export default class App extends Vue {
         this.$nextTick(() => { this.inputFocus = m === Method.input })
     }
 
-    async onInputCommit(str: string) {
-        if (this.inputCommitting)
-            return
-        this.inputCommitting = true
-        try {
-            this.formulaSource.add(str)
-        } finally {
-            this.inputCommitting = false
-        }
+    onControlPanelCommit(move: IMove) {
+        this.controlPanelSource.add(move)
+    }
+
+    onFormulaCommit(moves: IMove[]) {
+        this.formulaSource.add(moves)
     }
 }
 </script>
