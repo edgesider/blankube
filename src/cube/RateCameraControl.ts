@@ -70,10 +70,12 @@ export class RateCameraControl extends LngLatCameraControl {
     }
 
     setRadius(radius: number) {
-        gsap.to(this, {
+        gsap.fromTo(this, {
+            radius: this.radius < radius ? /*变大*/ radius * 0.8 : /*变小*/ radius * 1.2
+        }, {
             radius,
             duration: .5,
-            ease: 'power3',
+            ease: 'power',
             onUpdate: () => this.updateCamera()
         })
     }
