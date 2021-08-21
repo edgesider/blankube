@@ -87,42 +87,44 @@ export class Pipe<T> extends Closable {
 }
 
 export class CombinedSource<T> extends AbsSource<T> {
-    constructor(public sources: AbsSource<T>[]) {
+    constructor(sources: AbsSource<T>[]) {
         super()
-        this.cache = this.sources.map(() => CombinedSource.NOT_EXISTS)
+        this.sourcesInfo = sources.map(it => ({source: it, value: CombinedSource.NOT_EXISTS}))
     }
 
-    private readonly cache: T[]
+    private sourcesInfo: { source: AbsSource<T>, value: T }[]
     private needResolve: Function[] = []
 
+    private async startGetter(src: { source: AbsSource<T>, value: T }) {
+        src.value = CombinedSource.GETTING
+        const v = await src.source.get()
+        if (this.needResolve.length > 0) {
+            this.needResolve.shift()(v)
+            src.value = CombinedSource.NOT_EXISTS
+        } else {
+            src.value = v
+        }
+    }
+
     get(): Promise<T> {
-        const existId = this.cache.findIndex(v =>
-            v !== CombinedSource.NOT_EXISTS && v !== CombinedSource.GETTING)
-        if (existId === -1) {
-            return new Promise<T>(resolve => {
-                this.needResolve.push(resolve)
-                this.sources
-                    .filter((s, idx) => this.cache[idx] !== CombinedSource.GETTING)
-                    .forEach(async (s, idx) => {
-                        this.cache[idx] = CombinedSource.GETTING
-                        const o = await s.get()
-                        if (this.needResolve.length > 0) {
-                            this.needResolve.shift()(o)
-                            this.cache[idx] = CombinedSource.NOT_EXISTS
-                        } else {
-                            this.cache[idx] = o
-                        }
-                    })
+        const existed = this.sourcesInfo.find(it =>
+            it.value !== CombinedSource.NOT_EXISTS && it.value !== CombinedSource.GETTING)
+        if (!existed) {
+            return new Promise(res => {
+                this.needResolve.push(res)
+                this.sourcesInfo
+                    .filter(it => it.value !== CombinedSource.GETTING)
+                    .forEach(it => this.startGetter(it))
             })
         } else {
-            const o = this.cache[existId]
-            this.cache[existId] = CombinedSource.NOT_EXISTS
-            return Promise.resolve(o)
+            const v = existed.value
+            existed.value = CombinedSource.NOT_EXISTS
+            return Promise.resolve(v)
         }
     }
 
     protected afterClose() {
-        this.sources.forEach(it => it.close())
+        this.sourcesInfo.forEach(it => it.source.close())
     }
 
     private static NOT_EXISTS: any = {type: "Not Exists"}
