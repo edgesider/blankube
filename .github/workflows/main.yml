@@ -1,0 +1,26 @@
+name: pages
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: build
+        run: |
+          yarn
+          yarn build
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: pages # The branch the action should deploy to.
+          folder: dist # The folder the action should deploy.
