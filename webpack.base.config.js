@@ -1,6 +1,30 @@
 const path = require('path')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const HtmlPlugin = require('html-webpack-plugin')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
+const fs = require('fs')
+const {sources: {RawSource}} = require("webpack");
+
+class CopyPlugin {
+    // [['src', 'dest'], ['src', 'dest']]
+    constructor(pairs) {
+        this.pairs = pairs
+    }
+
+    async readFile(path) {
+        return new Promise((res, rej) =>
+            fs.readFile(path, null, (e, d) => e ? rej(e) : res(d)))
+    }
+
+    apply(compiler) {
+        compiler.hooks.thisCompilation.tap('CopyStaticPlugin', ctx =>
+            ctx.hooks.processAssets.tap('CopyStaticPlugin', async () => {
+                for (let [src, dest] of this.pairs) {
+                    ctx.emitAsset(dest, new RawSource(await this.readFile(src)))
+                }
+            })
+        )
+    }
+}
 
 module.exports = {
     entry: './src/main.ts',
@@ -30,8 +54,13 @@ module.exports = {
         }
     },
     plugins: [
-        new HtmlWebpackPlugin({template: "./public/index.html"}),
+        new HtmlPlugin({
+            template: "./public/index.html", favicon: "./public/favicon.ico"
+        }),
         new VueLoaderPlugin(),
+        new CopyPlugin([
+            ['public/favicon-16x16.png', 'favicon-16x16.png'],
+            ['public/favicon-32x32.png', 'favicon-32x32.png']])
     ],
     optimization: {
         splitChunks: {
