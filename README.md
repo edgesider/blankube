@@ -1,6 +1,6 @@
 # Blankube
 
-简单的魔方模拟器，[示例](https://edgesider.github.io/blankube) 。
+魔方模拟器+魔方演算器，[示例](https://edgesider.github.io/blankube) 。
 
 计划的功能有：
 
@@ -83,6 +83,7 @@ r u r'u'
 - Cube
     - [ ] 支持自定义材质
     - [ ] 状态描述
+        - [x] 状态验算
         - [ ] 存储每个片的位置和旋转信息，以实现更为灵活的自定义材质
         - [ ] 可解判定（置换群？）
 

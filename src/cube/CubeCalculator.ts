@@ -8,8 +8,8 @@ const x_ = Object.freeze(new Vector3(-1, 0, 0))
 const y_ = Object.freeze(new Vector3(0, -1, 0))
 const z_ = Object.freeze(new Vector3(0, 0, -1))
 
-const faceAxis = {r: x, l: x_, u: y, d: y_, f: z, b: z_}
-const faces = ['u', 'd', 'f', 'b', 'r', 'l']
+const faceAxis: { [key: string]: Readonly<Vector3> } = Object.freeze({r: x, l: x_, u: y, d: y_, f: z, b: z_})
+const faces: Readonly<FaceName[]> = Object.freeze(['u', 'd', 'f', 'b', 'r', 'l'])
 
 const DefaultCubeDescriptor = 'u=uuuuuuuuu;d=ddddddddd;f=fffffffff;b=bbbbbbbbb;r=rrrrrrrrr;l=lllllllll'
 
@@ -36,6 +36,8 @@ function parseCubeDescriptor(cd: string, order: number): { [key: string]: string
 /**
  * 旋转公式 --展开-> 置换公式
  * f -> replace[(uf,rf)(uf,df)(uf,lf)];rotate:f
+ *
+ * TODO 修改标准片序，建立面坐标系，保证都是右手系
  */
 export default class CubeCalculator {
     constructor(cd: string = DefaultCubeDescriptor, public readonly order: number = 3) {
@@ -44,6 +46,37 @@ export default class CubeCalculator {
 
     readonly pieceCount: number = this.order * this.order
     readonly fds: { [key: string]: string }
+
+    /**
+     * 旋转face面算起的第layer层
+     */
+    rotateLayer(face: FaceName, layer: number, clockwise: boolean): CubeCalculator {
+        this.rotateFace(face, clockwise)
+
+        const nor = faceAxis[face]
+
+        // 找到周围的四个面
+        const sides = faces.filter(f => faceAxis[f].dot(nor) === 0)
+        console.assert(sides.length === 4)
+
+        // 四个面绕法线排序
+        // 先选中第一个面
+        const sortedSides = [sides[0]]
+        for (let i = 1, currF = sides[0]; i < 4; i++) {
+            // 下一个面的法线与当前面法线叉乘应该等于旋转面法线
+            const next = sides.filter(f => faceAxis[f].clone().cross(faceAxis[currF]).equals(nor))
+            console.assert(next.length === 1)
+            sortedSides.push(next[0])
+            currF = next[0]
+        }
+        if (!clockwise)
+            sortedSides.reverse()
+
+        this.swapEdge(face, sortedSides[0], sortedSides[1], layer)
+        this.swapEdge(face, sortedSides[0], sortedSides[3], layer)
+        this.swapEdge(face, sortedSides[2], sortedSides[3], layer)
+        return this
+    }
 
     /**
      * 交换byFace四周的face0和face1两个面上的两条边；这两条边位于靠近byFace面的第layer层
@@ -70,6 +103,9 @@ export default class CubeCalculator {
         // 检查参数
         if (norBy.dot(nor0) !== 0 || norBy.dot(nor1) !== 0) {
             throw Error('face0 or face1 not nearby the by-face')
+        }
+        if (nor0.dot(nor1) !== 0) {
+            throw Error('face0 not nearby face1')
         }
 
         const fd0 = this.fds[face0], fd1 = this.fds[face1]
