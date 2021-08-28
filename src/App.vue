@@ -10,12 +10,16 @@
         </div>
         <canvas ref="canvas" id="cube"></canvas>
         <div class="bottom" @keydown.esc="switchToKeyboard">
-            <control-panel :enabled="isKeyboard"
-                           @commit="onControlPanelCommit"
-            ></control-panel>
-            <formula-input :focus.sync="inputFocus"
-                           @commit="onFormulaCommit"
-            ></formula-input>
+            <div class="control-panel-container">
+                <control-panel :enabled="isKeyboard"
+                               @commit="onControlPanelCommit"
+                ></control-panel>
+            </div>
+            <div class="input-container">
+                <formula-input :focus.sync="inputFocus"
+                               @commit="onFormulaCommit"
+                ></formula-input>
+            </div>
         </div>
     </div>
 </template>
@@ -170,5 +174,18 @@ export default class App extends Vue {
     position: fixed;
     bottom: 5px;
     transition: all .3s ease-out;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.control-panel-container {
+    margin-bottom: 8px;
+}
+
+.input-container {
+    width: 600px;
 }
 </style>

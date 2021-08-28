@@ -1,11 +1,9 @@
 <template>
-    <div class="container">
-        <ul>
-            <li class="btn undo" @mousedown="bindUndo" v-long-press="bindUndo"></li>
-            <li class="btn redo" @mousedown="bindRedo" v-long-press="bindRedo"></li>
-            <li class="btn reset" @mousedown="bindReset"></li>
-        </ul>
-    </div>
+    <ul>
+        <li class="btn undo" @mousedown="bindUndo" v-long-press="bindUndo"></li>
+        <li class="btn redo" @mousedown="bindRedo" v-long-press="bindRedo"></li>
+        <li class="btn reset" @mousedown="bindReset"></li>
+    </ul>
 </template>
 
 <script lang="ts">
@@ -45,25 +43,23 @@ export default class ControlPanel extends Vue {
 </script>
 
 <style scoped>
-.container {
-    width: 100vw;
-    height: 30px;
-    z-index: 10;
-    margin-bottom: 8px;
+ul {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    margin: 0;
+    padding: 0;
+    appearance: none;
+    list-style: none;
 }
 
-.container > ul, .btn {
+.btn {
     appearance: none;
     list-style: none;
     padding: 0;
     margin: 0;
-}
-
-.container > ul {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-content: center;
 }
 
 .btn {
