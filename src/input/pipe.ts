@@ -53,25 +53,17 @@ export class Pipe<T> extends Closable {
         return this
     }
 
-    protected async get() {
-        this.checkClose()
-        return await this.source.get()
-    }
-
-    protected async put(o: T) {
-        this.checkClose()
-        return await this.sink.put(o)
-    }
-
     protected looper = async () => {
         try {
             // noinspection InfiniteLoopJS
             while (true) {
-                this.checkClose()
-                await this.put(await this.get())
+                await this.sink.put(await this.source.get())
             }
         } catch (e) {
-            console.error(e)
+            if (!this._closed) {
+                this.close()
+                throw e
+            }
         }
     }
 
@@ -97,7 +89,17 @@ export class CombinedSource<T> extends AbsSource<T> {
 
     private async startGetter(src: { source: AbsSource<T>, value: T }) {
         src.value = CombinedSource.GETTING
-        const v = await src.source.get()
+        let v: T
+        try {
+            v = await src.source.get()
+        } catch (e) {
+            if (this._closed) {
+                src.value = CombinedSource.NOT_EXISTS
+                return
+            } else {
+                throw e
+            }
+        }
         if (this.needResolve.length > 0) {
             this.needResolve.shift()(v)
             src.value = CombinedSource.NOT_EXISTS
