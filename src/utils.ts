@@ -1,5 +1,6 @@
 import * as Three from "three";
 import {Vector3} from "three";
+import {DirectiveOptions} from "vue";
 
 export function rotateAboutPoint(object: Three.Object3D, point: Vector3, axis: Vector3, angle: number) {
     object.position.copy(point)
@@ -53,4 +54,38 @@ export function addAxis(obj, length = 10) {
     corZObj.position.set(0, 0, length)
     corZObj.rotateOnAxis(new Three.Vector3(1, 0, 0), Math.PI / 2)
     obj.add(corX, corYObj, corZObj)
+}
+
+export function createPressDirective(startThreshold: number = 800, repeatThreshold: number = 150): DirectiveOptions {
+    return {
+        bind(el, binding) {
+            if (typeof binding.value !== 'function')
+                throw Error('binding must be a function')
+
+            if (el['__long_press'])
+                return
+            const lp = el['__long_press'] = {
+                down: false,
+                startTimer: 0,
+                repeatTimer: 0,
+            }
+            const emit = binding.value
+            const startRepeat = () => {
+                emit()
+                lp.repeatTimer = window.setInterval(emit, repeatThreshold)
+            }
+            const cancel = () => {
+                lp.down = false
+                clearTimeout(lp.startTimer)
+                clearTimeout(lp.repeatTimer)
+            }
+            el.addEventListener('mousedown', () => {
+                if (lp.down)
+                    return
+                lp.down = true
+                lp.startTimer = window.setTimeout(startRepeat, repeatThreshold)
+            })
+            document.addEventListener('mouseup', cancel)
+        }
+    }
 }

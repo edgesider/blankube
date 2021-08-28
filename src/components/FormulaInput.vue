@@ -19,7 +19,7 @@ import FormulaParser from "@/input/Formula";
 
 @Component({})
 export default class FormulaInput extends Vue {
-    @Prop({default: false})
+    @Prop({default: true})
     enabled: boolean
     @Prop({default: false})
     focus: boolean

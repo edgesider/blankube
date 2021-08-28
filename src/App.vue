@@ -1,13 +1,6 @@
 <template>
     <div id="app">
         <div class="header">
-            <label for="method">控制方式
-                <select name="method" id="method" v-model="method">
-                    <option v-for="m in this.methods" :value="m">
-                        {{ m }}
-                    </option>
-                </select>
-            </label>
             <label for="order">阶数
                 <select name="order" id="order" v-model="order" @change="onOrderSelect">
                     <option v-for="o in orders" :value="o">{{ o }}阶</option>
@@ -20,8 +13,7 @@
             <control-panel :enabled="isKeyboard"
                            @commit="onControlPanelCommit"
             ></control-panel>
-            <formula-input :enabled="isInput"
-                           :focus.sync="inputFocus"
+            <formula-input :focus.sync="inputFocus"
                            @commit="onFormulaCommit"
             ></formula-input>
         </div>
@@ -86,6 +78,14 @@ export default class App extends Vue {
 
     switchToKeyboard() {
         this.method = Method.keyboard
+    }
+
+    @Watch('inputFocus')
+    inputFocusChange(focus) {
+        if (focus)
+            this.switchToInput()
+        else
+            this.switchToKeyboard()
     }
 
     @Watch('method', {immediate: true})

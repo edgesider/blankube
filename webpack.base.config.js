@@ -45,6 +45,10 @@ module.exports = {
         }, {
             test: /.css$/,
             use: ['style-loader', 'css-loader']
+        }, {
+            test: /.*/,
+            include: path.resolve(__dirname, 'asset'),
+            type: 'asset/resource'
         }]
     },
     resolve: {

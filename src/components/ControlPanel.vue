@@ -1,9 +1,9 @@
 <template>
     <div class="container">
         <ul>
-            <li class="btn" @click="bindUndo"><</li>
-            <li class="btn" @click="bindRedo">></li>
-            <li class="btn" @click="bindReset">reset</li>
+            <li class="btn undo" @mousedown="bindUndo" v-long-press="bindUndo"></li>
+            <li class="btn redo" @mousedown="bindRedo" v-long-press="bindRedo"></li>
+            <li class="btn reset" @mousedown="bindReset"></li>
         </ul>
     </div>
 </template>
@@ -13,15 +13,13 @@ import Component from "vue-class-component";
 import Vue from "vue";
 import {Prop} from "vue-property-decorator";
 import Mover from "@/cube/Mover";
+import {createPressDirective} from "@/utils";
 
-/**
- * TODO
- * - 更换为图片
- * - 设置按钮的可用状态
- * - 快捷键
- */
-
-@Component({})
+@Component({
+    directives: {
+        longPress: createPressDirective(800, 300)
+    }
+})
 export default class ControlPanel extends Vue {
     @Prop({default: false})
     enabled: boolean
@@ -73,24 +71,44 @@ export default class ControlPanel extends Vue {
     position: relative;
     color: white;
     display: block;
-    /*width: 30px;*/
     padding: 0 10px;
+    width: 30px;
     height: 30px;
     font-size: 14px;
     line-height: 30px;
     text-align: center;
     margin: 0 2px;
     user-select: none;
-    background-color: #444;
-    border-radius: 5px;
-    border: 1px #444 solid;
 }
 
 .btn:hover {
-    background-color: #333;
+    filter: brightness(110%);
 }
 
 .btn:active {
-    border: 1px #555 solid;
+    filter: brightness(90%);
+}
+
+.btn.undo {
+    background-image: url(~/asset/arrow.svg);
+    background-size: cover;
+    background-position: 0 0;
+    background-repeat: no-repeat;
+    transform: rotateZ(-90deg);
+}
+
+.btn.redo {
+    background-image: url(~/asset/arrow.svg);
+    background-size: cover;
+    background-position: 0 0;
+    background-repeat: no-repeat;
+    transform: rotateZ(90deg);
+}
+
+.btn.reset {
+    background-image: url(~/asset/reset.svg);
+    background-size: cover;
+    background-position: 0 0;
+    background-repeat: no-repeat;
 }
 </style>
