@@ -34,9 +34,9 @@ export function addAxis(obj, length = 10) {
             new Three.Vector3(0, 0, 0), new Three.Vector3(0, length, 0)]),
         geoZ = new Three.BufferGeometry().setFromPoints([
             new Three.Vector3(0, 0, 0), new Three.Vector3(0, 0, length)])
-    const mtrX = new Three.LineBasicMaterial({color: 0xFF0000, linewidth: 10}),
-        mtrY = new Three.LineBasicMaterial({color: 0xFF00, linewidth: 10}),
-        mtrZ = new Three.LineBasicMaterial({color: 0xFF, linewidth: 10})
+    const mtrX = new Three.LineBasicMaterial({color: 0xFF0000, linewidth: 1}),
+        mtrY = new Three.LineBasicMaterial({color: 0xFF00, linewidth: 1}),
+        mtrZ = new Three.LineBasicMaterial({color: 0xFF, linewidth: 1})
     obj.add(new Three.Line(geoX, mtrX), new Three.Line(geoY, mtrY), new Three.Line(geoZ, mtrZ))
 
     const geoCor = new Three.ConeGeometry(.3, 1)
