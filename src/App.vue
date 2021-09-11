@@ -57,9 +57,9 @@ class TimelineSink implements ISink<IMove> {
     async put(move: IMove): Promise<any> {
         if (move instanceof TraceableMove) {
             if (move instanceof ResetMove &&
-                this.manager.index === 0 ||
-                (this.manager.items[this.manager.index] instanceof MoveItem &&
-                    (this.manager.items[this.manager.index] as MoveItem).move instanceof ResetMove)
+                (this.manager.index === 0 ||
+                    (this.manager.items[this.manager.index] instanceof MoveItem &&
+                        (this.manager.items[this.manager.index] as MoveItem).move instanceof ResetMove))
             ) {
                 return
             }
