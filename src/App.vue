@@ -15,6 +15,10 @@
                                @commit="onControlPanelCommit"
                 ></control-panel>
             </div>
+            <div class="timeline-container">
+                <timeline :manager="timelineManager"
+                          :cube="game && game.cube"></timeline>
+            </div>
             <div class="input-container">
                 <formula-input :focus.sync="inputFocus"
                                @commit="onFormulaCommit"
@@ -27,14 +31,18 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component"
-import Game from "@/cube";
+import Game, {Three} from "@/cube";
 import FormulaInput from "@/components/FormulaInput.vue";
-import {CombinedSource, Pipe, QueuedSource} from "@/input/pipe";
+import {CombinedSource, ISink, Pipe, QueuedSource} from "@/input/pipe";
 import {Watch} from "vue-property-decorator";
 import ControlPanel from "@/components/ControlPanel.vue";
-import {IMove} from "@/cube/Mover";
+import {IMove, RedoMove, ResetMove, TraceableMove, UndoMove} from "@/cube/Mover";
 import {DomEventSource} from "@/input/EventSource";
 import {keyboardMoveMapper} from "@/input/KeyboardActionMapper";
+import CubeCalculator from "@/cube/CubeCalculator";
+import Timeline from "@/components/Timeline.vue";
+import {MoveItem, TimelineManager} from "@/input/Timeline";
+import {RubikCube} from "@/cube/RubikCube";
 
 enum Method {
     none = 'None',
@@ -42,8 +50,30 @@ enum Method {
     input = 'Input'
 }
 
+class TimelineSink implements ISink<IMove> {
+    constructor(public manager: TimelineManager, public cube: RubikCube) {
+    }
+
+    async put(move: IMove): Promise<any> {
+        if (move instanceof TraceableMove) {
+            if (move instanceof ResetMove &&
+                this.manager.index === 0 ||
+                (this.manager.items[this.manager.index] instanceof MoveItem &&
+                    (this.manager.items[this.manager.index] as MoveItem).move instanceof ResetMove)
+            ) {
+                return
+            }
+            this.manager.pushWithClean(new MoveItem(move))
+            await this.manager.forward(this.cube)
+        } else if (move instanceof UndoMove)
+            await this.manager.backward(this.cube)
+        else if (move instanceof RedoMove)
+            await this.manager.forward(this.cube)
+    }
+}
+
 @Component({
-    components: {ControlPanel, FormulaInput}
+    components: {Timeline, ControlPanel, FormulaInput}
 })
 export default class App extends Vue {
     game: Game = null
@@ -55,6 +85,8 @@ export default class App extends Vue {
     pipe: Pipe<IMove>
     controlPanelSource: QueuedSource<IMove>
     formulaSource: QueuedSource<IMove[]>
+
+    timelineManager: TimelineManager = new TimelineManager()
 
     inputFocus = false
 
@@ -106,13 +138,15 @@ export default class App extends Vue {
                     .filter(act => !!act)
                 this.controlPanelSource = new QueuedSource()
                 this.pipe = new Pipe(
-                    new CombinedSource([keySrc, this.controlPanelSource]), this.game.mover)
+                    new CombinedSource([keySrc, this.controlPanelSource]),
+                    new TimelineSink(this.timelineManager, this.game.cube))
                     .join()
                 break;
             case Method.input:
                 this.pipe?.close()
                 this.formulaSource = new QueuedSource()
-                this.pipe = new Pipe(this.formulaSource.mapFlat<IMove>(it => it), this.game.mover)
+                this.pipe = new Pipe(this.formulaSource.mapFlat<IMove>(it => it),
+                    new TimelineSink(this.timelineManager, this.game.cube))
                     .join()
                 break;
         }
@@ -120,7 +154,7 @@ export default class App extends Vue {
         this.$nextTick(() => { this.inputFocus = m === Method.input })
     }
 
-    onControlPanelCommit(move: IMove) {
+    async onControlPanelCommit(move: IMove) {
         this.controlPanelSource.add(move)
     }
 
@@ -186,6 +220,11 @@ export default class App extends Vue {
 }
 
 .input-container {
-    width: 600px;
+    width: 800px;
+}
+
+.timeline-container {
+    margin-bottom: 8px;
+    width: 800px;
 }
 </style>

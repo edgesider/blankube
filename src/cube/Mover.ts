@@ -71,7 +71,7 @@ export class BodyMove extends TraceableMove {
     }
 }
 
-class ResetMove extends TraceableMove {
+export class ResetMove extends TraceableMove {
     constructor() {
         super()
     }
@@ -101,22 +101,22 @@ abstract class TraceMove implements IMove {
 }
 
 
-class UndoMove extends TraceMove {
+export class UndoMove extends TraceMove {
     toString(): string {
         return 'UndoMove {}'
     }
 }
 
-class RedoMove extends TraceMove {
+export class RedoMove extends TraceMove {
     toString(): string {
         return 'RedoMove {}'
     }
 }
 
 export default class Mover implements ISink<IMove> {
-    static UndoMove: IMove = new UndoMove()
-    static RedoMove: IMove = new RedoMove()
-    static ResetMove: IMove = new ResetMove()
+    static UndoMove = new UndoMove()
+    static RedoMove = new RedoMove()
+    static ResetMove = new ResetMove()
 
     constructor(public readonly cube: RubikCube) {}
 
