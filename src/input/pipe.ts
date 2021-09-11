@@ -35,10 +35,24 @@ export abstract class AbsSource<T> extends Closable {
     public filter(f: (T) => boolean): AbsSource<T> {
         return new FilteredSource(this, f)
     }
+
+    public before(f: () => void): AbsSource<T> {
+        return new MiddlewareSource(this, f, null)
+    }
+
+    public after(f: (T) => void): AbsSource<T> {
+        return new MiddlewareSource(this, null, f)
+    }
 }
 
 export interface ISink<T> {
     put(o: T): Promise<any>
+}
+
+export class NullSink<T> implements ISink<T> {
+    put(o: T): Promise<any> {
+        return Promise.resolve()
+    }
 }
 
 export class Pipe<T> extends Closable {
@@ -244,5 +258,22 @@ class FlattedSource<TA> extends AbsSource<TA> {
 
     protected afterClose() {
         this.origin.close()
+    }
+}
+
+class MiddlewareSource<T> extends AbsSource<T> {
+    constructor(public readonly origin: AbsSource<T>,
+                public readonly beforeAction: () => void,
+                public readonly afterAction: (T) => void) {
+        super();
+    }
+
+    async get(): Promise<T> {
+        if (this.beforeAction)
+            await this.beforeAction()
+        const v = await this.origin.get()
+        if (this.afterAction)
+            await this.afterAction(v)
+        return v
     }
 }
